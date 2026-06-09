@@ -680,6 +680,11 @@
             if (materiaisData && materiaisData.success) materiais = materiaisData.materiais || [];
             if (estoqueData && estoqueData.success) estoquePelotoes = estoqueData.estoque || [];
             if (movData && movData.success) movimentacoes = movData.movimentacoes || [];
+            
+            // Atualizar prévia se já houver um relatório selecionado
+            if (tipoRelatorioSelecionado) {
+                renderizarPreview();
+            }
         }
 
         function renderizarAcessoNegado() {
@@ -694,6 +699,30 @@
                     </button>
                 </div>
             `;
+        }
+
+        function carregarCategoriasFiltro() {
+            const select = document.getElementById('filtroCategoria');
+            if (!select) return;
+            const categorias = [...new Set(materiais.map(m => m.categoria))];
+            select.innerHTML = '<option value="">Todas categorias</option>' + 
+                categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function carregarCategoriasFiltroCriticos() {
+            const select = document.getElementById('filtroCategoriaCriticos');
+            if (!select) return;
+            const categorias = [...new Set(materiais.map(m => m.categoria))];
+            select.innerHTML = '<option value="">Todas categorias</option>' + 
+                categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function getStatusEstoque(disponivel, total) {
+            if (total === 0) return { status: 'critico', text: 'ESGOTADO', class: 'badge-critico' };
+            const percentual = (disponivel / total) * 100;
+            if (percentual <= 30) return { status: 'critico', text: 'CRÍTICO', class: 'badge-critico' };
+            if (percentual <= 60) return { status: 'alerta', text: 'ALERTA', class: 'badge-alerta' };
+            return { status: 'normal', text: 'NORMAL', class: 'badge-normal' };
         }
 
         function renderizarFiltros() {
@@ -829,33 +858,11 @@
             renderizarPreview();
         }
 
-        function carregarCategoriasFiltro() {
-            const select = document.getElementById('filtroCategoria');
-            if (!select) return;
-            const categorias = [...new Set(materiais.map(m => m.categoria))];
-            select.innerHTML = '<option value="">Todas categorias</option>' + 
-                categorias.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-
-        function carregarCategoriasFiltroCriticos() {
-            const select = document.getElementById('filtroCategoriaCriticos');
-            if (!select) return;
-            const categorias = [...new Set(materiais.map(m => m.categoria))];
-            select.innerHTML = '<option value="">Todas categorias</option>' + 
-                categorias.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-
-        function getStatusEstoque(disponivel, total) {
-            if (total === 0) return { status: 'critico', text: 'ESGOTADO', class: 'badge-critico' };
-            const percentual = (disponivel / total) * 100;
-            if (percentual <= 30) return { status: 'critico', text: 'CRÍTICO', class: 'badge-critico' };
-            if (percentual <= 60) return { status: 'alerta', text: 'ALERTA', class: 'badge-alerta' };
-            return { status: 'normal', text: 'NORMAL', class: 'badge-normal' };
-        }
-
         function renderizarPreview() {
             const previewContainer = document.getElementById('previewSection');
             const previewContent = document.getElementById('previewContent');
+            
+            if (!previewContainer || !previewContent) return;
             
             if (tipoRelatorioSelecionado === 'estoque_geral') {
                 const categoria = document.getElementById('filtroCategoria')?.value || '';
@@ -870,34 +877,36 @@
                 });
                 
                 previewContainer.style.display = 'block';
-                previewContent.innerHTML = `
-                    <table>
-                        <thead>
-                            <tr><th>Código</th><th>Material</th><th>Categoria</th><th>Total</th><th>Disponível</th><th>Status</th><th>Localização</th></tr>
-                        </thead>
-                        <tbody>
-                            ${filtrados.map(m => {
-                                const statusInfo = getStatusEstoque(m.quantidade_disponivel, m.quantidade_total);
-                                return `
-                                    <tr>
-                                        <td>${m.codigo}</td>
-                                        <td>${m.material}</td>
-                                        <td>${m.categoria}</td>
-                                        <td>${m.quantidade_total}</td>
-                                        <td>${m.quantidade_disponivel}</td>
-                                        <td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td>
-                                        <td>${m.localizacao || '-'}</td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                    ${filtrados.length === 0 ? '<p style="text-align: center; padding: 2rem;">Nenhum material encontrado</p>' : ''}
-                `;
+                if (filtrados.length === 0) {
+                    previewContent.innerHTML = '<p style="text-align: center; padding: 2rem;">Nenhum material encontrado</p>';
+                } else {
+                    previewContent.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr><th>Código</th><th>Material</th><th>Categoria</th><th>Total</th><th>Disponível</th><th>Status</th><th>Localização</th></tr>
+                            </thead>
+                            <tbody>
+                                ${filtrados.map(m => {
+                                    const statusInfo = getStatusEstoque(m.quantidade_disponivel, m.quantidade_total);
+                                    return `
+                                        <tr>
+                                            <td>${m.codigo}</td>
+                                            <td>${m.material}</td>
+                                            <td>${m.categoria}</td>
+                                            <td>${m.quantidade_total}</td>
+                                            <td>${m.quantidade_disponivel}</td>
+                                            <td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td>
+                                            <td>${m.localizacao || '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
             }
             else if (tipoRelatorioSelecionado === 'reserva_pelotoes') {
                 const pelotao = document.getElementById('filtroPelotao')?.value || 'todos';
-                const statusEstoque = document.getElementById('filtroStatusEstoque')?.value || '';
                 const busca = document.getElementById('filtroBuscaReserva')?.value.toLowerCase() || '';
                 
                 let filtrados = [...estoquePelotoes];
@@ -912,25 +921,28 @@
                 });
                 
                 previewContainer.style.display = 'block';
-                previewContent.innerHTML = Object.entries(agrupados).map(([pelotaoNome, itens]) => `
-                    <div style="margin-bottom: 1.5rem;">
-                        <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--accent);">📦 ${pelotaoNome}</h3>
-                        <table>
-                            <thead><tr><th>Código</th><th>Material</th><th>Quantidade</th><th>Status Item</th></tr></thead>
-                            <tbody>
-                                ${itens.map(item => `
-                                    <tr>
-                                        <td>${item.codigo || '-'}</td>
-                                        <td>${item.material_nome}</td>
-                                        <td><strong>${item.quantidade}</strong></td>
-                                        <td>${item.status === 'DISPONIVEL' ? '📌 Disponível' : item.status === 'EM_USO' ? '🔧 Em Uso' : item.status === 'MANUTENCAO' ? '⚠️ Manutenção' : '❌ Extraviado'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `).join('');
-                if (Object.keys(agrupados).length === 0) previewContent.innerHTML = '<p style="text-align: center; padding: 2rem;">Nenhum material encontrado</p>';
+                if (Object.keys(agrupados).length === 0) {
+                    previewContent.innerHTML = '<p style="text-align: center; padding: 2rem;">Nenhum material encontrado</p>';
+                } else {
+                    previewContent.innerHTML = Object.entries(agrupados).map(([pelotaoNome, itens]) => `
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--accent);">📦 ${pelotaoNome}</h3>
+                            <table>
+                                <thead><tr><th>Código</th><th>Material</th><th>Quantidade</th><th>Status Item</th></tr></thead>
+                                <tbody>
+                                    ${itens.map(item => `
+                                        <tr>
+                                            <td>${item.codigo || '-'}</td>
+                                            <td>${item.material_nome}</td>
+                                            <td><strong>${item.quantidade}</strong></td>
+                                            <td>${item.status === 'DISPONIVEL' ? '📌 Disponível' : item.status === 'EM_USO' ? '🔧 Em Uso' : item.status === 'MANUTENCAO' ? '⚠️ Manutenção' : '❌ Extraviado'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `).join('');
+                }
             }
             else if (tipoRelatorioSelecionado === 'movimentacoes') {
                 const dataInicio = document.getElementById('filtroDataInicio')?.value || '';
@@ -945,26 +957,29 @@
                 if (pelotao) filtrados = filtrados.filter(m => m.pelotao === pelotao);
                 
                 previewContainer.style.display = 'block';
-                previewContent.innerHTML = `
-                    <table>
-                        <thead>
-                            <tr><th>Data/Hora</th><th>Material</th><th>Tipo</th><th>Quantidade</th><th>Pelotão</th><th>Usuário</th></tr>
-                        </thead>
-                        <tbody>
-                            ${filtrados.slice(0, 50).map(m => `
-                                <tr>
-                                    <td>${m.data || '-'} ${m.hora || ''}</td>
-                                    <td>${m.material_nome}</td>
-                                    <td><span class="badge ${m.tipo === 'CAUTELA' ? 'badge-alerta' : 'badge-normal'}">${m.tipo === 'CAUTELA' ? '📤 SAÍDA' : '📥 DEVOLUÇÃO'}</span></td>
-                                    <td>${m.quantidade}</td>
-                                    <td>${m.pelotao}</td>
-                                    <td>${m.usuario}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    ${filtrados.length === 0 ? '<p style="text-align: center; padding: 2rem;">Nenhuma movimentação encontrada</p>' : ''}
-                `;
+                if (filtrados.length === 0) {
+                    previewContent.innerHTML = '<p style="text-align: center; padding: 2rem;">Nenhuma movimentação encontrada</p>';
+                } else {
+                    previewContent.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr><th>Data/Hora</th><th>Material</th><th>Tipo</th><th>Quantidade</th><th>Pelotão</th><th>Usuário</th></tr>
+                            </thead>
+                            <tbody>
+                                ${filtrados.slice(0, 50).map(m => `
+                                    <tr>
+                                        <td>${m.data || '-'} ${m.hora || ''}</td>
+                                        <td>${m.material_nome}</td>
+                                        <td><span class="badge ${m.tipo === 'CAUTELA' ? 'badge-alerta' : 'badge-normal'}">${m.tipo === 'CAUTELA' ? '📤 SAÍDA' : '📥 DEVOLUÇÃO'}</span></td>
+                                        <td>${m.quantidade}</td>
+                                        <td>${m.pelotao}</td>
+                                        <td>${m.usuario}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
             }
             else if (tipoRelatorioSelecionado === 'itens_criticos') {
                 const categoria = document.getElementById('filtroCategoriaCriticos')?.value || '';
@@ -977,35 +992,39 @@
                 });
                 
                 previewContainer.style.display = 'block';
-                previewContent.innerHTML = `
-                    <table>
-                        <thead>
-                            <tr><th>Código</th><th>Material</th><th>Categoria</th><th>Total</th><th>Disponível</th><th>Necessidade</th><th>Localização</th></tr>
-                        </thead>
-                        <tbody>
-                            ${filtrados.map(m => {
-                                const necessidade = Math.ceil(m.quantidade_total * 0.7);
-                                return `
-                                    <tr>
-                                        <td>${m.codigo}</td>
-                                        <td>${m.material}</td>
-                                        <td>${m.categoria}</td>
-                                        <td>${m.quantidade_total}</td>
-                                        <td><strong style="color: var(--danger);">${m.quantidade_disponivel}</strong></td>
-                                        <td>${necessidade} unidades</td>
-                                        <td>${m.localizacao || '-'}</td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                    ${filtrados.length === 0 ? '<p style="text-align: center; padding: 2rem;">Nenhum item com estoque crítico encontrado</p>' : ''}
-                `;
+                if (filtrados.length === 0) {
+                    previewContent.innerHTML = '<p style="text-align: center; padding: 2rem;">Nenhum item com estoque crítico encontrado</p>';
+                } else {
+                    previewContent.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr><th>Código</th><th>Material</th><th>Categoria</th><th>Total</th><th>Disponível</th><th>Necessidade</th><th>Localização</th></tr>
+                            </thead>
+                            <tbody>
+                                ${filtrados.map(m => {
+                                    const necessidade = Math.ceil(m.quantidade_total * 0.7);
+                                    return `
+                                        <tr>
+                                            <td>${m.codigo}</td>
+                                            <td>${m.material}</td>
+                                            <td>${m.categoria}</td>
+                                            <td>${m.quantidade_total}</td>
+                                            <td><strong style="color: var(--danger);">${m.quantidade_disponivel}</strong></td>
+                                            <td>${necessidade} unidades</td>
+                                            <td>${m.localizacao || '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
             }
         }
 
         async function exportarPDF() {
             const btn = document.getElementById('btnExportarPDF');
+            if (!btn) return;
             
             let dadosParaExportar = {};
             
