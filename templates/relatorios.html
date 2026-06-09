@@ -1104,7 +1104,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Gerando PDF...';
             
             try {
-                const response = await fetch('/api/exportar_relatorio_pdf', {
+                const response = await fetch('/api/exportar_reserva_pdf', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dadosParaExportar),
