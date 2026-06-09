@@ -191,6 +191,23 @@ def init_db():
                         VALUES (?, ?, ?, ?, ?)
                     ''', (pelotao, material['id'], material['material'], 0, 'DISPONIVEL'))
         
+        # DISTRIBUIR ALGUNS MATERIAIS PARA OS PELOTÕES
+        distribuir = [
+            ('1º Pelotão', 1, 5),   # Farda de Combate
+            ('1º Pelotão', 2, 10),  # Coturno
+            ('1º Pelotão', 3, 3),   # Capacete
+            ('2º Pelotão', 1, 4),
+            ('2º Pelotão', 2, 8),
+            ('3º Pelotão', 1, 3),
+            ('Material SUB', 1, 2),
+            ('Material SUB', 4, 1),
+        ]
+        for pelotao, mat_id, qtd in distribuir:
+            conn.execute('''
+                UPDATE estoque_pelotao SET quantidade = quantidade + ?
+                WHERE pelotao = ? AND material_id = ?
+            ''', (qtd, pelotao, mat_id))
+        
         conn.commit()
         print("✅ Banco inicializado com sucesso!")
 
@@ -631,12 +648,14 @@ def api_cautela():
             return jsonify({'success': False, 'message': 'Material não encontrado'}), 404
         
         if tipo == 'CAUTELA':
+            # Cautela: tirar do estoque da companhia
             if material['quantidade_disponivel'] < quantidade:
                 return jsonify({'success': False, 'message': f'Estoque insuficiente. Disponível: {material["quantidade_disponivel"]}'}), 400
             
             nova_qtd = material['quantidade_disponivel'] - quantidade
             conn.execute('UPDATE estoque_companhia SET quantidade_disponivel = ? WHERE id = ?', (nova_qtd, material_id))
             
+            # Adicionar ao pelotão
             estoque_pel = conn.execute('''
                 SELECT * FROM estoque_pelotao WHERE pelotao = ? AND material_id = ?
             ''', (pelotao_destino, material_id)).fetchone()
@@ -655,6 +674,7 @@ def api_cautela():
             
             detalhes = f'Cautela de {quantidade} unidade(s) para {pelotao_destino}'
         else:
+            # Descautela: tirar do pelotão e devolver à companhia
             estoque_pel = conn.execute('''
                 SELECT * FROM estoque_pelotao WHERE pelotao = ? AND material_id = ?
             ''', (pelotao_destino, material_id)).fetchone()
@@ -977,11 +997,9 @@ def api_exportar_reserva_pdf():
         pelotao_filtro = data.get('pelotao_filtro', 'todos')
         data_exportacao = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
         
-        # Filtrar estoque pelo pelotão selecionado
         if pelotao_filtro != 'todos':
             estoque = [item for item in estoque if item.get('pelotao') == pelotao_filtro]
         
-        # Agrupar por pelotão
         pelotoes_agrupados = {}
         for item in estoque:
             pelotao = item.get('pelotao', 'Sem Pelotão')
@@ -989,10 +1007,7 @@ def api_exportar_reserva_pdf():
                 pelotoes_agrupados[pelotao] = []
             pelotoes_agrupados[pelotao].append(item)
         
-        # Criar buffer para PDF
         buffer = io.BytesIO()
-        
-        # Criar documento com orientação paisagem
         doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), 
                                rightMargin=1*cm, leftMargin=1*cm,
                                topMargin=1*cm, bottomMargin=1*cm)
@@ -1000,27 +1015,13 @@ def api_exportar_reserva_pdf():
         styles = getSampleStyleSheet()
         story = []
         
-        # Estilo para título
-        titulo_style = ParagraphStyle(
-            'TituloStyle',
-            parent=styles['Heading1'],
-            fontSize=16,
-            textColor=colors.HexColor('#2d6a4f'),
-            alignment=1,
-            spaceAfter=20
-        )
+        titulo_style = ParagraphStyle('TituloStyle', parent=styles['Heading1'],
+                                       fontSize=16, textColor=colors.HexColor('#2d6a4f'),
+                                       alignment=1, spaceAfter=20)
+        subtitulo_style = ParagraphStyle('SubtituloStyle', parent=styles['Normal'],
+                                         fontSize=10, textColor=colors.HexColor('#4a6a4a'),
+                                         alignment=1, spaceAfter=30)
         
-        # Estilo para subtítulo
-        subtitulo_style = ParagraphStyle(
-            'SubtituloStyle',
-            parent=styles['Normal'],
-            fontSize=10,
-            textColor=colors.HexColor('#4a6a4a'),
-            alignment=1,
-            spaceAfter=30
-        )
-        
-        # Título
         story.append(Paragraph("ENC-MAT - Reserva dos Pelotões", titulo_style))
         story.append(Paragraph(f"Data da consulta: {data_exportacao}", subtitulo_style))
         story.append(Paragraph(f"Usuário: {usuario.get('nome', 'N/A')} - Nível: {usuario.get('nivel', 'N/A')}", subtitulo_style))
@@ -1029,32 +1030,20 @@ def api_exportar_reserva_pdf():
             story.append(Paragraph(f"Pelotão filtrado: {pelotao_filtro}", subtitulo_style))
         story.append(Spacer(1, 10))
         
-        # Para cada pelotão, criar uma tabela
         for pelotao, itens in sorted(pelotoes_agrupados.items()):
-            # Cabeçalho do pelotão
-            pelotao_style = ParagraphStyle(
-                'PelotaoStyle',
-                parent=styles['Heading2'],
-                fontSize=12,
-                textColor=colors.HexColor('#1a2c1a'),
-                spaceBefore=15,
-                spaceAfter=10
-            )
+            pelotao_style = ParagraphStyle('PelotaoStyle', parent=styles['Heading2'],
+                                           fontSize=12, textColor=colors.HexColor('#1a2c1a'),
+                                           spaceBefore=15, spaceAfter=10)
             total_itens = sum(item.get('quantidade', 0) for item in itens)
             story.append(Paragraph(f"📦 {pelotao} (Total: {total_itens} itens)", pelotao_style))
             
-            # Preparar dados da tabela
-            tabela_dados = [
-                ['Código', 'Material', 'Quantidade', 'Mínimo', 'Status Estoque', 'Status Item']
-            ]
+            tabela_dados = [['Código', 'Material', 'Quantidade', 'Mínimo', 'Status Estoque', 'Status Item']]
             
             for item in itens:
-                # Buscar produto para obter mínimo
                 produto = next((p for p in produtos if p.get('id') == item.get('material_id')), None)
                 min_estoque = int(produto.get('quantidade_total', 0) * 0.3) if produto and produto.get('quantidade_total') else 10
                 quantidade = item.get('quantidade', 0)
                 
-                # Determinar status do estoque
                 if quantidade <= min_estoque:
                     status_estoque = "CRÍTICO"
                 elif quantidade <= min_estoque * 1.5:
@@ -1079,7 +1068,6 @@ def api_exportar_reserva_pdf():
                     status_item_text
                 ])
             
-            # Criar tabela
             tabela = Table(tabela_dados, repeatRows=1)
             tabela.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2d6a4f')),
@@ -1100,29 +1088,188 @@ def api_exportar_reserva_pdf():
             story.append(tabela)
             story.append(Spacer(1, 15))
         
-        # Rodapé com total geral
         total_geral = sum(item.get('quantidade', 0) for item in estoque)
-        rodape_style = ParagraphStyle(
-            'RodapeStyle',
-            parent=styles['Normal'],
-            fontSize=8,
-            textColor=colors.HexColor('#4a6a4a'),
-            alignment=1,
-            spaceBefore=20
-        )
+        rodape_style = ParagraphStyle('RodapeStyle', parent=styles['Normal'],
+                                       fontSize=8, textColor=colors.HexColor('#4a6a4a'),
+                                       alignment=1, spaceBefore=20)
         story.append(Paragraph(f"Total geral de materiais nos pelotões: {total_geral} itens", rodape_style))
         story.append(Paragraph("ENC-MAT - Sistema de Controle de Estoque", rodape_style))
         
-        # Gerar PDF
         doc.build(story)
         buffer.seek(0)
         
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=f'reserva_pelotoes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
-            mimetype='application/pdf'
-        )
+        return send_file(buffer, as_attachment=True,
+                        download_name=f'reserva_pelotoes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
+                        mimetype='application/pdf')
+    except ImportError:
+        return jsonify({'success': False, 'message': 'Biblioteca reportlab não instalada. Execute: pip install reportlab'}), 500
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Erro ao gerar PDF: {str(e)}'}), 500
+
+# ============================================
+# API EXPORTAR RELATÓRIO PDF
+# ============================================
+@app.route('/api/exportar_relatorio_pdf', methods=['POST'])
+@login_required
+@nivel_required(['DEV', 'SUB'])
+def api_exportar_relatorio_pdf():
+    try:
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import A4, landscape
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import cm
+        import io
+        from datetime import datetime
+        
+        data = request.json
+        tipo = data.get('tipo')
+        dados = data.get('dados', [])
+        titulo = data.get('titulo', 'Relatório')
+        usuario = data.get('usuario', {})
+        data_exportacao = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), 
+                               rightMargin=1*cm, leftMargin=1*cm,
+                               topMargin=1*cm, bottomMargin=1*cm)
+        
+        styles = getSampleStyleSheet()
+        story = []
+        
+        titulo_style = ParagraphStyle('TituloStyle', parent=styles['Heading1'],
+                                       fontSize=16, textColor=colors.HexColor('#2d6a4f'),
+                                       alignment=1, spaceAfter=20)
+        subtitulo_style = ParagraphStyle('SubtituloStyle', parent=styles['Normal'],
+                                         fontSize=10, textColor=colors.HexColor('#4a6a4a'),
+                                         alignment=1, spaceAfter=30)
+        
+        story.append(Paragraph(f"ENC-MAT - {titulo}", titulo_style))
+        story.append(Paragraph(f"Data da consulta: {data_exportacao}", subtitulo_style))
+        story.append(Paragraph(f"Usuário: {usuario.get('nome', 'N/A')} - Nível: {usuario.get('nivel', 'N/A')}", subtitulo_style))
+        story.append(Spacer(1, 10))
+        
+        if tipo == 'estoque_geral':
+            tabela_dados = [['Código', 'Material', 'Categoria', 'Total', 'Disponível', 'Status Estoque', 'Localização']]
+            for item in dados:
+                percentual = (item.get('quantidade_disponivel', 0) / max(item.get('quantidade_total', 1), 1)) * 100
+                if percentual <= 30:
+                    status = "CRÍTICO"
+                elif percentual <= 60:
+                    status = "ALERTA"
+                else:
+                    status = "NORMAL"
+                tabela_dados.append([
+                    item.get('codigo', '-'), item.get('material', '-'), item.get('categoria', '-'),
+                    str(item.get('quantidade_total', 0)), str(item.get('quantidade_disponivel', 0)),
+                    status, item.get('localizacao', '-') or '-'
+                ])
+            tabela = Table(tabela_dados, repeatRows=1)
+            tabela.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2d6a4f')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 9),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#c0d4c0')),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f5faf5'), colors.white]),
+            ]))
+            story.append(tabela)
+            
+        elif tipo == 'reserva_pelotoes':
+            agrupados = {}
+            for item in dados:
+                pelotao = item.get('pelotao', 'Sem Pelotão')
+                if pelotao not in agrupados:
+                    agrupados[pelotao] = []
+                agrupados[pelotao].append(item)
+            
+            for pelotao, itens in sorted(agrupados.items()):
+                pelotao_style = ParagraphStyle('PelotaoStyle', parent=styles['Heading2'],
+                                               fontSize=12, textColor=colors.HexColor('#1a2c1a'),
+                                               spaceBefore=15, spaceAfter=10)
+                total_itens = sum(i.get('quantidade', 0) for i in itens)
+                story.append(Paragraph(f"📦 {pelotao} (Total: {total_itens} itens)", pelotao_style))
+                
+                tabela_dados = [['Código', 'Material', 'Quantidade', 'Status Item']]
+                for item in itens:
+                    status_item = item.get('status', 'DISPONIVEL')
+                    status_text = {
+                        'DISPONIVEL': 'DISPONÍVEL',
+                        'EM_USO': 'EM USO',
+                        'MANUTENCAO': 'MANUTENÇÃO',
+                        'EXTRAVIADO': 'EXTRAVIADO'
+                    }.get(status_item, status_item)
+                    tabela_dados.append([
+                        item.get('codigo', '-'), item.get('material_nome', '-'),
+                        str(item.get('quantidade', 0)), status_text
+                    ])
+                tabela = Table(tabela_dados, repeatRows=1)
+                tabela.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2d6a4f')),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 9),
+                    ('FONTSIZE', (0, 1), (-1, -1), 8),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#c0d4c0')),
+                ]))
+                story.append(tabela)
+                story.append(Spacer(1, 10))
+                
+        elif tipo == 'movimentacoes':
+            tabela_dados = [['Data/Hora', 'Material', 'Tipo', 'Quantidade', 'Pelotão', 'Usuário']]
+            for item in dados[:500]:
+                tabela_dados.append([
+                    f"{item.get('data', '-')} {item.get('hora', '')}",
+                    item.get('material_nome', '-'),
+                    item.get('tipo', '-'),
+                    str(item.get('quantidade', 0)),
+                    item.get('pelotao', '-'),
+                    item.get('usuario', '-')
+                ])
+            tabela = Table(tabela_dados, repeatRows=1)
+            tabela.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2d6a4f')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 8),
+                ('FONTSIZE', (0, 1), (-1, -1), 7),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#c0d4c0')),
+            ]))
+            story.append(tabela)
+            
+        elif tipo == 'itens_criticos':
+            tabela_dados = [['Código', 'Material', 'Categoria', 'Total', 'Disponível', 'Necessidade', 'Localização']]
+            for item in dados:
+                necessidade = int(item.get('quantidade_total', 0) * 0.7)
+                tabela_dados.append([
+                    item.get('codigo', '-'), item.get('material', '-'), item.get('categoria', '-'),
+                    str(item.get('quantidade_total', 0)), str(item.get('quantidade_disponivel', 0)),
+                    f"{necessidade} unidades", item.get('localizacao', '-') or '-'
+                ])
+            tabela = Table(tabela_dados, repeatRows=1)
+            tabela.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#c44a3a')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 9),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#c0d4c0')),
+            ]))
+            story.append(tabela)
+        
+        story.append(Spacer(1, 20))
+        story.append(Paragraph(f"Total de registros: {len(dados)}", subtitulo_style))
+        story.append(Paragraph("ENC-MAT - Sistema de Controle de Estoque", subtitulo_style))
+        
+        doc.build(story)
+        buffer.seek(0)
+        
+        return send_file(buffer, as_attachment=True,
+                        download_name=f'{tipo}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
+                        mimetype='application/pdf')
     except ImportError:
         return jsonify({'success': False, 'message': 'Biblioteca reportlab não instalada. Execute: pip install reportlab'}), 500
     except Exception as e:

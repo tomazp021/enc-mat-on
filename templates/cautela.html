@@ -460,6 +460,10 @@
         .btn-submit:hover {
             background: var(--accent-hover);
         }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
         .info-card {
             background: var(--accent-light);
@@ -650,6 +654,8 @@
                         <div class="material-search-container">
                             <input type="text" id="materialSearch" class="material-search-input" placeholder="Digite para buscar material...">
                             <input type="hidden" id="materialId">
+                            <input type="hidden" id="materialNome">
+                            <input type="hidden" id="materialQuantidade">
                             <div id="materialDropdown" class="material-dropdown"></div>
                         </div>
                     </div>
@@ -702,8 +708,8 @@
 
     <script>
         let currentUser = null;
-        let materiais = [];
-        let estoquePelotao = [];
+        let materiais = [];        // Para DEV/SUB - materiais do estoque companhia
+        let materiaisPelotao = [];  // Para RESP - materiais do pelotão
         let movimentacoes = [];
         let tipoAtual = 'CAUTELA';
         let materialSelecionado = null;
@@ -719,12 +725,8 @@
             document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
         }
 
-        if (menuToggle) {
-            menuToggle.addEventListener('click', toggleMenu);
-        }
-        if (overlay) {
-            overlay.addEventListener('click', toggleMenu);
-        }
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
 
         document.querySelectorAll('.nav-menu a').forEach(link => {
             link.addEventListener('click', () => {
@@ -744,8 +746,12 @@
                     credentials: 'same-origin'
                 });
                 if (response.status === 401) { window.location.href = '/'; return null; }
+                if (response.status === 403) return { success: false, message: 'Acesso negado' };
                 return await response.json();
-            } catch (error) { console.error(error); return null; }
+            } catch (error) { 
+                console.error(error); 
+                return null; 
+            }
         }
 
         function showToast(msg, isError = false) {
@@ -757,45 +763,27 @@
             setTimeout(() => { toast.style.display = 'none'; }, 3000);
         }
 
-        async function carregarEstoquePelotao() {
+        // Carregar materiais para DEV/SUB (estoque da companhia)
+        async function carregarMateriaisCompanhia() {
+            const data = await apiRequest('/api/estoque_companhia');
+            if (data && data.success) {
+                materiais = data.materiais.filter(m => m.status === 'ATIVO');
+                renderizarDropdown();
+            }
+        }
+
+        // Carregar materiais para RESP (estoque do pelotão)
+        async function carregarMateriaisPelotao() {
             const data = await apiRequest('/api/estoque_pelotao');
             if (data && data.success) {
-                estoquePelotao = data.estoque;
+                // Filtrar apenas materiais do pelotão do usuário que tem quantidade > 0
+                const pelotao = currentUser.pelotao;
+                materiaisPelotao = data.estoque.filter(e => e.pelotao === pelotao);
+                renderizarDropdownPelotao();
             }
         }
 
-        async function carregarMateriais() {
-            const companhiaData = await apiRequest('/api/estoque_companhia');
-            const pelotaoData = await apiRequest('/api/estoque_pelotao');
-
-            let lista = [];
-
-            if (companhiaData && companhiaData.success) {
-                lista.push(...companhiaData.materiais);
-            }
-
-            if (pelotaoData && pelotaoData.success) {
-                pelotaoData.estoque.forEach(item => {
-                    lista.push({
-                        id: item.material_id,
-                        codigo: item.codigo || '',
-                        material: item.material_nome,
-                        categoria: item.categoria || '',
-                        quantidade_disponivel: item.quantidade || 0,
-                        status: 'ATIVO'
-                    });
-                });
-            }
-
-            const unicos = {};
-            lista.forEach(i => {
-                if (!unicos[i.id]) unicos[i.id] = i;
-            });
-
-            materiais = Object.values(unicos);
-            renderizarDropdown();
-        }
-
+        // Renderizar dropdown para DEV/SUB
         function renderizarDropdown() {
             const searchTerm = document.getElementById('materialSearch').value.toLowerCase();
             const dropdown = document.getElementById('materialDropdown');
@@ -803,9 +791,7 @@
             let filtered = materiais;
             
             if (tipoAtual === 'CAUTELA') {
-                filtered = materiais.filter(m => m.quantidade_disponivel > 0 && m.status !== 'INATIVO');
-            } else {
-                filtered = materiais.filter(m => m.status !== 'INATIVO');
+                filtered = materiais.filter(m => m.quantidade_disponivel > 0);
             }
             
             if (searchTerm) {
@@ -822,19 +808,63 @@
             }
             
             dropdown.innerHTML = filtered.map(m => `
-                <div class="material-option" onclick="selecionarMaterial(${m.id}, '${m.material.replace(/'/g, "\\'")}', '${m.codigo}', ${m.quantidade_disponivel || 0})">
+                <div class="material-option" onclick="selecionarMaterialCompanhia(${m.id}, '${m.material.replace(/'/g, "\\'")}', '${m.codigo}', ${m.quantidade_disponivel || 0})">
                     <div class="material-nome">${m.material}</div>
                     <div class="material-codigo">${m.codigo}</div>
-                    <div class="material-qtd">${tipoAtual === 'CAUTELA' ? `${m.quantidade_disponivel || 0} disponiveis` : ''}</div>
+                    <div class="material-qtd">${tipoAtual === 'CAUTELA' ? `${m.quantidade_disponivel || 0} disponíveis` : ''}</div>
                 </div>
             `).join('');
             dropdown.classList.add('show');
         }
 
-        function selecionarMaterial(id, nome, codigo, disponivel) {
-            materialSelecionado = { id, nome, codigo, disponivel };
+        // Renderizar dropdown para RESP (materiais do pelotão)
+        function renderizarDropdownPelotao() {
+            const searchTerm = document.getElementById('materialSearch').value.toLowerCase();
+            const dropdown = document.getElementById('materialDropdown');
+            
+            let filtered = materiaisPelotao;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(m => 
+                    m.material_nome.toLowerCase().includes(searchTerm) || 
+                    (m.codigo && m.codigo.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="material-option" style="text-align: center;">Nenhum material encontrado no seu pelotão</div>';
+                dropdown.classList.add('show');
+                return;
+            }
+            
+            dropdown.innerHTML = filtered.map(m => `
+                <div class="material-option" onclick="selecionarMaterialPelotao(${m.material_id}, '${m.material_nome.replace(/'/g, "\\'")}', '${m.codigo || ''}', ${m.quantidade || 0})">
+                    <div class="material-nome">${m.material_nome}</div>
+                    <div class="material-codigo">${m.codigo || 'SEM CÓDIGO'}</div>
+                    <div class="material-qtd">${tipoAtual === 'DESCAUTELA' ? `${m.quantidade || 0} disponíveis para devolução` : ''}</div>
+                </div>
+            `).join('');
+            dropdown.classList.add('show');
+        }
+
+        // Selecionar material para DEV/SUB
+        window.selecionarMaterialCompanhia = function(id, nome, codigo, disponivel) {
+            materialSelecionado = { id, nome, codigo, disponivel, tipo: 'companhia' };
             document.getElementById('materialSearch').value = `${codigo} - ${nome}`;
             document.getElementById('materialId').value = id;
+            document.getElementById('materialNome').value = nome;
+            document.getElementById('materialQuantidade').value = disponivel;
+            document.getElementById('materialDropdown').classList.remove('show');
+            atualizarInfoMaterial();
+        }
+
+        // Selecionar material para RESP
+        window.selecionarMaterialPelotao = function(id, nome, codigo, disponivel) {
+            materialSelecionado = { id, nome, codigo, disponivel, tipo: 'pelotao' };
+            document.getElementById('materialSearch').value = `${codigo || 'SEM CÓDIGO'} - ${nome}`;
+            document.getElementById('materialId').value = id;
+            document.getElementById('materialNome').value = nome;
+            document.getElementById('materialQuantidade').value = disponivel;
             document.getElementById('materialDropdown').classList.remove('show');
             atualizarInfoMaterial();
         }
@@ -846,8 +876,22 @@
             }
         }
 
-        document.getElementById('materialSearch')?.addEventListener('input', renderizarDropdown);
-        document.getElementById('materialSearch')?.addEventListener('focus', renderizarDropdown);
+        document.getElementById('materialSearch')?.addEventListener('input', () => {
+            const nivel = currentUser?.nivel;
+            if (nivel === 'DEV' || nivel === 'SUB') {
+                renderizarDropdown();
+            } else if (nivel === 'RESP') {
+                renderizarDropdownPelotao();
+            }
+        });
+        document.getElementById('materialSearch')?.addEventListener('focus', () => {
+            const nivel = currentUser?.nivel;
+            if (nivel === 'DEV' || nivel === 'SUB') {
+                renderizarDropdown();
+            } else if (nivel === 'RESP') {
+                renderizarDropdownPelotao();
+            }
+        });
         document.addEventListener('click', fecharDropdown);
 
         async function carregarMovimentacoes() {
@@ -869,19 +913,19 @@
             
             tbody.innerHTML = filtradas.slice(0, 20).map(m => `
                 <tr>
-                    <td>${m.data} ${m.hora || ''}</td>
+                    <td>${m.data || '-'} ${m.hora || ''}</td>
                     <td>${m.nome_militar || '-'}</td>
                     <td>${m.responsavel || '-'}</td>
-                    <td>${m.material_nome}</td>
+                    <td>${m.material_nome || '-'}</td>
                     <td><span class="${m.tipo === 'CAUTELA' ? 'badge-cautela' : 'badge-descautela'}">${m.tipo === 'CAUTELA' ? 'CAUTELA' : 'DESCAUTELA'}</span></td>
-                    <td>${m.quantidade}</td>
-                    <td>${m.pelotao}</td>
+                    <td>${m.quantidade || 0}</td>
+                    <td>${m.pelotao || '-'}</td>
                     <td>${m.observacao || '-'}</td>
                 </tr>
             `).join('');
             
             if (filtradas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nenhuma movimentação registrada</span></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nenhuma movimentação registrada</td></tr>';
             }
         }
 
@@ -897,7 +941,7 @@
                 infoText.innerHTML = `<strong>${materialSelecionado.codigo} - ${materialSelecionado.nome}</strong> - Quantidade disponível: <strong>${materialSelecionado.disponivel} unidades</strong>`;
             } else {
                 const pelotao = document.getElementById('pelotaoSelect').value;
-                infoText.innerHTML = `<strong>${materialSelecionado.codigo} - ${materialSelecionado.nome}</strong><br>Informe a quantidade a ser devolvida ao ${pelotao}.`;
+                infoText.innerHTML = `<strong>${materialSelecionado.codigo} - ${materialSelecionado.nome}</strong><br>Quantidade disponível para devolução: <strong>${materialSelecionado.disponivel} unidades</strong>`;
             }
         }
 
@@ -912,7 +956,15 @@
             materialSelecionado = null;
             document.getElementById('materialSearch').value = '';
             document.getElementById('materialId').value = '';
-            await carregarMateriais();
+            document.getElementById('materialNome').value = '';
+            document.getElementById('materialQuantidade').value = '';
+            
+            const nivel = currentUser?.nivel;
+            if (nivel === 'DEV' || nivel === 'SUB') {
+                await carregarMateriaisCompanhia();
+            } else if (nivel === 'RESP') {
+                await carregarMateriaisPelotao();
+            }
             atualizarInfoMaterial();
         });
         
@@ -923,7 +975,15 @@
             materialSelecionado = null;
             document.getElementById('materialSearch').value = '';
             document.getElementById('materialId').value = '';
-            await carregarMateriais();
+            document.getElementById('materialNome').value = '';
+            document.getElementById('materialQuantidade').value = '';
+            
+            const nivel = currentUser?.nivel;
+            if (nivel === 'DEV' || nivel === 'SUB') {
+                await carregarMateriaisCompanhia();
+            } else if (nivel === 'RESP') {
+                await carregarMateriaisPelotao();
+            }
             atualizarInfoMaterial();
         });
 
@@ -942,7 +1002,7 @@
             }
             
             if (!responsavel) {
-                showToast('Informe o nome do responsavel!', true);
+                showToast('Informe o nome do responsável!', true);
                 document.getElementById('responsavel').focus();
                 return;
             }
@@ -953,26 +1013,31 @@
             }
             
             if (!quantidade || quantidade <= 0) {
-                showToast('Informe uma quantidade valida!', true);
+                showToast('Informe uma quantidade válida!', true);
                 return;
             }
             
-            const material = materiais.find(m => m.id == materialId);
-            if (!material) {
-                showToast('Material não encontrado!', true);
-                return;
+            // Para RESP, o pelotão é fixo
+            if (currentUser?.nivel === 'RESP' && currentUser?.pelotao) {
+                pelotao = currentUser.pelotao;
             }
             
+            // Verificar quantidade disponível
             if (tipoAtual === 'CAUTELA') {
-                if (quantidade > (material.quantidade_disponivel || 0)) {
-                    showToast(`Quantidade insuficiente! Disponível: ${material.quantidade_disponivel || 0}`, true);
+                if (quantidade > (materialSelecionado?.disponivel || 0)) {
+                    showToast(`Quantidade insuficiente! Disponível: ${materialSelecionado?.disponivel || 0}`, true);
+                    return;
+                }
+            } else {
+                if (quantidade > (materialSelecionado?.disponivel || 0)) {
+                    showToast(`Quantidade insuficiente para devolução! Disponível: ${materialSelecionado?.disponivel || 0}`, true);
                     return;
                 }
             }
             
             const data = {
                 tipo: tipoAtual,
-                material_id: materialId,
+                material_id: parseInt(materialId),
                 quantidade: quantidade,
                 observacao: observacao,
                 pelotao: pelotao,
@@ -990,12 +1055,21 @@
                 document.getElementById('observacao').value = '';
                 document.getElementById('materialSearch').value = '';
                 document.getElementById('materialId').value = '';
+                document.getElementById('materialNome').value = '';
+                document.getElementById('materialQuantidade').value = '';
                 materialSelecionado = null;
-                await carregarMateriais();
+                
+                // Recarregar dados
+                const nivel = currentUser?.nivel;
+                if (nivel === 'DEV' || nivel === 'SUB') {
+                    await carregarMateriaisCompanhia();
+                } else if (nivel === 'RESP') {
+                    await carregarMateriaisPelotao();
+                }
                 await carregarMovimentacoes();
                 atualizarInfoMaterial();
             } else {
-                showToast(result?.message || 'Erro ao registrar movimentacao', true);
+                showToast(result?.message || 'Erro ao registrar movimentação', true);
             }
         }
 
@@ -1015,21 +1089,27 @@
                 document.getElementById('userRole').innerHTML = roleText;
                 document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
                 
+                // Configurar permissões
                 if (currentUser.nivel === 'RESP' && currentUser.pelotao) {
                     const pelotaoSelect = document.getElementById('pelotaoSelect');
                     pelotaoSelect.innerHTML = `<option value="${currentUser.pelotao}">${currentUser.pelotao}</option>`;
                     pelotaoSelect.disabled = true;
+                    await carregarMateriaisPelotao();
+                } else if (currentUser.nivel === 'DEV' || currentUser.nivel === 'SUB') {
+                    await carregarMateriaisCompanhia();
                 } else if (currentUser.nivel === 'LEITURA') {
                     document.getElementById('btnRegistrar').disabled = true;
                     document.getElementById('btnRegistrar').style.opacity = '0.5';
                     document.getElementById('btnRegistrar').style.cursor = 'not-allowed';
                     document.getElementById('materialSearch').disabled = true;
                     document.getElementById('materialSearch').placeholder = 'Acesso apenas para leitura';
+                    document.getElementById('nomeMilitar').disabled = true;
+                    document.getElementById('responsavel').disabled = true;
+                    document.getElementById('quantidade').disabled = true;
+                    document.getElementById('pelotaoSelect').disabled = true;
                 }
                 
-                await carregarMateriais();
                 await carregarMovimentacoes();
-                
                 return currentUser;
             } catch (error) {
                 window.location.href = '/';
@@ -1058,8 +1138,6 @@
             const btn = document.getElementById('themeToggle');
             btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
         });
-
-        window.selecionarMaterial = selecionarMaterial;
         
         async function init() {
             initTheme();
