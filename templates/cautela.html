@@ -765,33 +765,34 @@
         }
 
         async function carregarMateriais() {
-            const nivel = currentUser?.nivel;
-            
-            if (nivel === 'DEV' || nivel === 'SUB') {
-                // ADMIN e SUB veem o estoque da companhia
-                const data = await apiRequest('/api/estoque_companhia');
-                if (data && data.success) {
-                    materiais = data.materiais;
-                }
-            } else if (nivel === 'RESP' && currentUser?.pelotao) {
-                // RESPONSÁVEL vê apenas os materiais do seu pelotão
-                await carregarEstoquePelotao();
-                // Filtrar materiais que existem no pelotão
-                const materiaisPelotao = estoquePelotao.filter(e => e.pelotao === currentUser.pelotao && e.quantidade > 0);
-                materiais = materiaisPelotao.map(ep => {
-                    return {
-                        id: ep.material_id,
-                        codigo: ep.codigo,
-                        material: ep.material_nome,
-                        categoria: ep.categoria,
-                        quantidade_disponivel: ep.quantidade,
-                        status: 'ATIVO'
-                    };
-                });
-            } else {
-                materiais = [];
+            const companhiaData = await apiRequest('/api/estoque_companhia');
+            const pelotaoData = await apiRequest('/api/estoque_pelotao');
+
+            let lista = [];
+
+            if (companhiaData && companhiaData.success) {
+                lista.push(...companhiaData.materiais);
             }
-            
+
+            if (pelotaoData && pelotaoData.success) {
+                pelotaoData.estoque.forEach(item => {
+                    lista.push({
+                        id: item.material_id,
+                        codigo: item.codigo || '',
+                        material: item.material_nome,
+                        categoria: item.categoria || '',
+                        quantidade_disponivel: item.quantidade || 0,
+                        status: 'ATIVO'
+                    });
+                });
+            }
+
+            const unicos = {};
+            lista.forEach(i => {
+                if (!unicos[i.id]) unicos[i.id] = i;
+            });
+
+            materiais = Object.values(unicos);
             renderizarDropdown();
         }
 
