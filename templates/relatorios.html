@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>ENC-MAT · Reserva dos Pelotões</title>
+    <title>ENC-MAT · Relatórios</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -24,7 +24,9 @@
             --accent-light: #d4e8d4;
             --border: #c0d4c0;
             --danger: #c44a3a;
+            --danger-hover: #a0382a;
             --success: #2a7a4a;
+            --success-hover: #1a5a3a;
             --warning: #d48a2a;
             --info: #2a6a8a;
             --shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -43,7 +45,9 @@
             --accent-light: #2a3a2a;
             --border: #3a5a3a;
             --danger: #d96c5c;
+            --danger-hover: #b84a3a;
             --success: #5a9a6a;
+            --success-hover: #3a7a4a;
             --warning: #d4a43a;
             --info: #4a8aaa;
             --shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -289,275 +293,203 @@
             color: white;
         }
 
-        .stats-grid {
+        .access-denied {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: 20px;
+            margin: 2rem;
+        }
+        .access-denied i {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        .access-denied h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--danger);
+        }
+        .access-denied p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        .btn-voltar {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .btn-voltar:hover {
+            background: var(--accent-hover);
+        }
+
+        .report-container {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .report-options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
             margin-bottom: 1.5rem;
         }
-        .stat-card {
+
+        .report-card {
             background: var(--bg-card);
             border-radius: 20px;
-            padding: 1.2rem;
-            text-align: center;
-            box-shadow: var(--shadow);
+            padding: 1.5rem;
             border: 1px solid var(--border);
             transition: all 0.2s;
+            cursor: pointer;
         }
-        .stat-card:hover {
+        .report-card:hover {
             transform: translateY(-3px);
             box-shadow: var(--shadow-hover);
+            border-color: var(--accent);
         }
-        .stat-card i {
+        .report-card.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+        .report-card i {
             font-size: 2rem;
             color: var(--accent);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
         }
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 800;
+        .report-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
         }
-        .stat-label {
-            font-size: 0.8rem;
+        .report-card p {
+            font-size: 0.7rem;
             color: var(--text-secondary);
         }
 
-        .section-card {
+        .filter-section {
             background: var(--bg-card);
             border-radius: 20px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            overflow-x: auto;
         }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .section-header h2 {
-            font-size: 1.2rem;
+        .filter-title {
+            font-size: 0.9rem;
             font-weight: 600;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--accent);
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+        select, input {
+            padding: 0.7rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
         }
 
+        .btn-generate {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        .btn-generate:hover {
+            background: var(--accent-hover);
+        }
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .preview-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .preview-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 700px;
+            min-width: 600px;
         }
         th, td {
-            padding: 0.8rem;
+            padding: 0.7rem;
             text-align: left;
             border-bottom: 1px solid var(--border);
         }
         th {
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--text-secondary);
         }
         td {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
-        .badge-status {
+        .badge {
             display: inline-block;
-            padding: 0.2rem 0.6rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 20px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
         }
-        .badge-normal { background: var(--success); color: white; }
         .badge-critico { background: var(--danger); color: white; }
         .badge-alerta { background: var(--warning); color: white; }
-        .badge-disponivel { background: var(--success); color: white; }
-        .badge-emuso { background: var(--info); color: white; }
-        .badge-manutencao { background: var(--warning); color: white; }
-        .badge-extraviado { background: var(--danger); color: white; }
-        
-        .action-icons i {
-            margin: 0 0.3rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: color 0.2s;
-            font-size: 1rem;
-        }
-        .action-icons i:hover {
-            color: var(--accent);
-        }
-
-        .search-bar {
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-            border: 1px solid var(--border);
-        }
-        .search-input {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 0.5rem 1rem;
-        }
-        .search-input i {
-            color: var(--text-secondary);
-        }
-        .search-input input {
-            flex: 1;
-            border: none;
-            background: none;
-            outline: none;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        .btn-add {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-        }
-        .btn-pdf {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-        }
-        .btn-pdf:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .material-search-container {
-            position: relative;
-            width: 100%;
-        }
-        .material-search-input {
-            width: 100%;
-            padding: 0.8rem;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: var(--input-bg);
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        .material-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 1001;
-            display: none;
-            box-shadow: var(--shadow);
-        }
-        .material-dropdown.show {
-            display: block;
-        }
-        .material-option {
-            padding: 0.8rem;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border);
-        }
-        .material-option:hover {
-            background: var(--accent-light);
-        }
-        .material-option .material-codigo {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1002;
-        }
-        .modal-content {
-            background: var(--bg-card);
-            border-radius: 24px;
-            padding: 2rem;
-            width: 90%;
-            max-width: 500px;
-            border: 1px solid var(--border);
-        }
-        .modal-content h3 {
-            margin-bottom: 1rem;
-            color: var(--accent);
-        }
-        .modal-content input, .modal-content select {
-            width: 100%;
-            padding: 0.8rem;
-            margin-bottom: 1rem;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: var(--input-bg);
-            color: var(--text-primary);
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-        .modal-buttons button {
-            padding: 0.6rem 1.2rem;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .btn-save {
-            background: var(--accent);
-            color: white;
-            border: none;
-        }
-        .btn-cancel {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-        }
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-            border: none;
-        }
+        .badge-normal { background: var(--success); color: white; }
 
         .toast {
             position: fixed;
@@ -578,16 +510,6 @@
                 padding: 1rem;
                 padding-top: 70px;
             }
-            .search-bar {
-                flex-direction: column;
-            }
-            .search-input {
-                width: 100%;
-            }
-            .btn-add, .btn-pdf {
-                width: 100%;
-                justify-content: center;
-            }
             .top-bar {
                 flex-direction: column;
                 align-items: flex-start;
@@ -595,24 +517,11 @@
             .page-title h1 {
                 font-size: 1.2rem;
             }
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-            .stat-value {
-                font-size: 1.4rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid {
+            .report-options {
                 grid-template-columns: 1fr;
             }
-            .section-card {
-                padding: 1rem;
-            }
-            .section-header h2 {
-                font-size: 1rem;
+            .filter-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -639,10 +548,10 @@
             <ul class="nav-menu">
                 <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
                 <li><a href="/estoque_companhia"><i class="fas fa-cubes"></i> <span>Estoque Companhia</span></a></li>
-                <li><a href="/reserva_pelotao" class="active"><i class="fas fa-users"></i> <span>Reserva Pelotão</span></a></li>
+                <li><a href="/reserva_pelotao"><i class="fas fa-users"></i> <span>Reserva Pelotão</span></a></li>
                 <li><a href="/cautela"><i class="fas fa-exchange-alt"></i> <span>Cautela</span></a></li>
                 <li><a href="/historico"><i class="fas fa-history"></i> <span>Histórico</span></a></li>
-                <li><a href="/relatorios"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+                <li><a href="/relatorios" class="active"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
                 <li><a href="/usuarios"><i class="fas fa-users-cog"></i> <span>Usuários</span></a></li>
                 <li><a href="/configuracoes"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
             </ul>
@@ -654,108 +563,63 @@
         <main class="main-content">
             <div class="top-bar">
                 <div class="page-title">
-                    <h1><i class="fas fa-users"></i> Reserva dos Pelotões</h1>
-                    <p id="subtitleMsg">Consulta de material distribuído por unidade</p>
+                    <h1><i class="fas fa-chart-line"></i> Relatórios do Sistema</h1>
+                    <p>Geração de relatórios gerenciais e PDF</p>
                 </div>
                 <button class="theme-toggle" id="themeToggle">
                     <i class="fas fa-moon"></i> <span>Modo Escuro</span>
                 </button>
             </div>
 
-            <div class="search-bar" id="searchBar">
-                <div class="search-input">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Buscar por material...">
+            <div id="contentArea">
+                <div class="report-container">
+                    <div class="report-options">
+                        <div class="report-card" data-tipo="estoque_geral" id="cardEstoque">
+                            <i class="fas fa-cubes"></i>
+                            <h3>Relatório de Estoque Geral</h3>
+                            <p>Lista completa de todos os materiais da Companhia</p>
+                        </div>
+                        <div class="report-card" data-tipo="reserva_pelotoes" id="cardReserva">
+                            <i class="fas fa-users"></i>
+                            <h3>Relatório de Reserva dos Pelotões</h3>
+                            <p>Material distribuído por cada pelotão</p>
+                        </div>
+                        <div class="report-card" data-tipo="movimentacoes" id="cardMovimentacoes">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h3>Relatório de Movimentações</h3>
+                            <p>Histórico de cautelas e descautelas</p>
+                        </div>
+                        <div class="report-card" data-tipo="itens_criticos" id="cardCriticos">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Relatório de Itens Críticos</h3>
+                            <p>Materiais com estoque abaixo do mínimo</p>
+                        </div>
+                    </div>
+
+                    <div id="filtrosContainer"></div>
+
+                    <div class="preview-section" id="previewSection" style="display: none;">
+                        <div class="preview-title">
+                            <i class="fas fa-eye"></i> Prévia do Relatório
+                        </div>
+                        <div id="previewContent"></div>
+                        <button class="btn-generate" id="btnExportarPDF">
+                            <i class="fas fa-file-pdf"></i> Exportar PDF
+                        </button>
+                    </div>
                 </div>
-                <button class="btn-add" id="btnAddProduto" style="display: none;"><i class="fas fa-plus"></i> Adicionar Produto</button>
-                <button class="btn-pdf" id="btnExportarPDF"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
             </div>
-
-            <div class="stats-grid" id="statsGrid"></div>
-            <div id="pelotoesContent"></div>
         </main>
-    </div>
-
-    <!-- Modal Adicionar Produto -->
-    <div id="addModal" class="modal">
-        <div class="modal-content">
-            <h3><i class="fas fa-plus-circle"></i> Adicionar Produto ao Pelotão</h3>
-            <select id="addPelotao">
-                <option value="">Selecione o pelotão</option>
-                <option value="1º Pelotão">1º Pelotão</option>
-                <option value="2º Pelotão">2º Pelotão</option>
-                <option value="3º Pelotão">3º Pelotão</option>
-            </select>
-            <div class="material-search-container">
-                <input type="text" id="materialSearchAdd" class="material-search-input" placeholder="Digite para buscar material...">
-                <input type="hidden" id="materialIdAdd">
-                <div id="materialDropdownAdd" class="material-dropdown"></div>
-            </div>
-            <input type="number" id="addQuantidade" placeholder="Quantidade" value="1" min="1">
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeAddModal()">Cancelar</button>
-                <button class="btn-save" id="confirmAddBtn">Adicionar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Edição -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h3><i class="fas fa-edit"></i> Editar Item do Pelotão</h3>
-            <input type="hidden" id="editItemId">
-            <p><strong>Material:</strong> <span id="editMaterialNome"></span></p>
-            <label>Quantidade:</label>
-            <input type="number" id="editQuantidade" min="0">
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
-                <button class="btn-save" id="confirmEditBtn">Salvar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Status -->
-    <div id="statusModal" class="modal">
-        <div class="modal-content">
-            <h3><i class="fas fa-exchange-alt"></i> Alterar Status do Item</h3>
-            <input type="hidden" id="statusItemId">
-            <p><strong id="statusItemNome"></strong></p>
-            <select id="novoStatusItem">
-                <option value="DISPONIVEL">DISPONÍVEL</option>
-                <option value="EM_USO">EM USO</option>
-                <option value="MANUTENCAO">MANUTENÇÃO</option>
-                <option value="EXTRAVIADO">EXTRAVIADO</option>
-            </select>
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeStatusModal()">Cancelar</button>
-                <button class="btn-save" id="confirmStatusBtn">Alterar Status</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Exclusão -->
-    <div id="deleteModal" class="modal">
-        <div class="modal-content">
-            <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h3>
-            <p>Tem certeza que deseja remover este item do estoque do pelotão?</p>
-            <p><strong id="deleteItemName"></strong></p>
-            <div class="modal-buttons">
-                <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
-                <button class="btn-danger" id="confirmDeleteBtn">Excluir</button>
-            </div>
-        </div>
     </div>
 
     <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
 
     <script>
         let currentUser = null;
+        let materiais = [];
         let estoquePelotoes = [];
-        let produtos = [];
-        let editItemId = null;
-        let deleteItemId = null;
-        let statusItemId = null;
-        let materialSelecionadoAdd = null;
+        let movimentacoes = [];
+        let tipoRelatorioSelecionado = null;
 
         // Menu Hamburguer
         const menuToggle = document.getElementById('menuToggle');
@@ -768,12 +632,8 @@
             document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
         }
 
-        if (menuToggle) {
-            menuToggle.addEventListener('click', toggleMenu);
-        }
-        if (overlay) {
-            overlay.addEventListener('click', toggleMenu);
-        }
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
 
         document.querySelectorAll('.nav-menu a').forEach(link => {
             link.addEventListener('click', () => {
@@ -802,415 +662,433 @@
                     credentials: 'same-origin'
                 });
                 if (response.status === 401) { window.location.href = '/'; return null; }
+                if (response.status === 403) return { success: false, message: 'Acesso negado' };
                 return await response.json();
-            } catch (error) { console.error(error); return null; }
-        }
-
-        async function carregarEstoquePelotao() {
-            const data = await apiRequest('/api/estoque_pelotao');
-            if (data && data.success) {
-                estoquePelotoes = data.estoque || [];
-                await carregarProdutos();
+            } catch (error) {
+                console.error(error);
+                return null;
             }
         }
 
-        async function carregarProdutos() {
-            const data = await apiRequest('/api/estoque_companhia');
-            if (data && data.success) {
-                produtos = data.materiais || [];
-                renderizarTudo();
-            }
+        async function carregarDados() {
+            const [materiaisData, estoqueData, movData] = await Promise.all([
+                apiRequest('/api/estoque_companhia'),
+                apiRequest('/api/estoque_pelotao'),
+                apiRequest('/api/movimentacoes')
+            ]);
+            
+            if (materiaisData && materiaisData.success) materiais = materiaisData.materiais || [];
+            if (estoqueData && estoqueData.success) estoquePelotoes = estoqueData.estoque || [];
+            if (movData && movData.success) movimentacoes = movData.movimentacoes || [];
         }
 
-        function renderizarDropdownAdd() {
-            const searchTerm = document.getElementById('materialSearchAdd').value.toLowerCase();
-            const dropdown = document.getElementById('materialDropdownAdd');
-            
-            let filtered = produtos.filter(p => p.status !== 'INATIVO');
-            
-            if (searchTerm) {
-                filtered = filtered.filter(p => 
-                    p.material.toLowerCase().includes(searchTerm) || 
-                    p.codigo.toLowerCase().includes(searchTerm)
-                );
-            }
-            
-            if (filtered.length === 0) {
-                dropdown.innerHTML = '<div class="material-option" style="text-align: center;">Nenhum material encontrado</div>';
-                dropdown.classList.add('show');
-                return;
-            }
-            
-            dropdown.innerHTML = filtered.slice(0, 10).map(p => `
-                <div class="material-option" onclick="selecionarMaterialAdd(${p.id}, '${p.material.replace(/'/g, "\\'")}', '${p.codigo}')">
-                    <div class="material-nome"><strong>${p.material}</strong></div>
-                    <div class="material-codigo">${p.codigo}</div>
+        function renderizarAcessoNegado() {
+            const container = document.getElementById('contentArea');
+            container.innerHTML = `
+                <div class="access-denied">
+                    <i class="fas fa-lock"></i>
+                    <h2>Acesso Restrito</h2>
+                    <p>Apenas usuários com nível DEV ou SUB têm acesso aos relatórios do sistema.</p>
+                    <button class="btn-voltar" onclick="window.location.href='/dashboard'">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                    </button>
                 </div>
-            `).join('');
-            dropdown.classList.add('show');
+            `;
         }
 
-        function selecionarMaterialAdd(id, nome, codigo) {
-            materialSelecionadoAdd = { id, nome, codigo };
-            document.getElementById('materialSearchAdd').value = `${codigo} - ${nome}`;
-            document.getElementById('materialIdAdd').value = id;
-            document.getElementById('materialDropdownAdd').classList.remove('show');
-        }
-
-        function fecharDropdownAdd(e) {
-            const container = document.querySelector('#addModal .material-search-container');
-            if (container && !container.contains(e.target)) {
-                document.getElementById('materialDropdownAdd').classList.remove('show');
-            }
-        }
-
-        function getStatusItemClass(status) {
-            switch(status) {
-                case 'DISPONIVEL': return 'badge-disponivel';
-                case 'EM_USO': return 'badge-emuso';
-                case 'MANUTENCAO': return 'badge-manutencao';
-                case 'EXTRAVIADO': return 'badge-extraviado';
-                default: return 'badge-normal';
-            }
-        }
-
-        function getStatusItemText(status) {
-            switch(status) {
-                case 'DISPONIVEL': return 'DISPONÍVEL';
-                case 'EM_USO': return 'EM USO';
-                case 'MANUTENCAO': return 'MANUTENÇÃO';
-                case 'EXTRAVIADO': return 'EXTRAVIADO';
-                default: return status || 'DISPONIVEL';
-            }
-        }
-
-        function getStatusEstoque(quantidade, min) {
-            if (min === 0) return "normal";
-            if (quantidade <= min) return "critico";
-            if (quantidade <= min * 1.5) return "alerta";
-            return "normal";
-        }
-
-        function renderizarStats() {
-            const statsGrid = document.getElementById('statsGrid');
-            const isAdmin = currentUser?.nivel === 'DEV' || currentUser?.nivel === 'SUB';
-            const isResp = currentUser?.nivel === 'RESP';
+        function renderizarFiltros() {
+            const container = document.getElementById('filtrosContainer');
             
-            let pelotoesFiltrados = [...estoquePelotoes];
-            
-            if (isResp && currentUser?.pelotao) {
-                pelotoesFiltrados = pelotoesFiltrados.filter(p => p.pelotao === currentUser.pelotao);
-            }
-            
-            const pelotoesAgrupados = {};
-            pelotoesFiltrados.forEach(item => {
-                if (!pelotoesAgrupados[item.pelotao]) {
-                    pelotoesAgrupados[item.pelotao] = 0;
-                }
-                pelotoesAgrupados[item.pelotao] += item.quantidade;
-            });
-            
-            if (Object.keys(pelotoesAgrupados).length === 0) {
-                statsGrid.innerHTML = '';
-                return;
-            }
-            
-            statsGrid.innerHTML = Object.entries(pelotoesAgrupados).map(([nome, total]) => `
-                <div class="stat-card">
-                    <i class="fas fa-building"></i>
-                    <div class="stat-value">${total}</div>
-                    <div class="stat-label">${nome}</div>
-                </div>
-            `).join('');
-        }
-
-        function renderizarPelotoes() {
-            const container = document.getElementById('pelotoesContent');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            const isAdmin = currentUser?.nivel === 'DEV' || currentUser?.nivel === 'SUB';
-            const isResp = currentUser?.nivel === 'RESP';
-            const isReadOnly = currentUser?.nivel === 'LEITURA';
-            
-            // Filtrar pelotões baseado no usuário
-            let pelotoesFiltrados = [...estoquePelotoes];
-            
-            if (isResp && currentUser?.pelotao) {
-                pelotoesFiltrados = pelotoesFiltrados.filter(p => p.pelotao === currentUser.pelotao);
-                document.getElementById('subtitleMsg').innerText = `Visualizando reserva do ${currentUser.pelotao}`;
-            } else if (isAdmin) {
-                document.getElementById('subtitleMsg').innerText = 'Consulta de material distribuído por unidade (Acesso Total)';
-            } else if (isReadOnly) {
-                document.getElementById('subtitleMsg').innerText = 'Consulta de material distribuído por unidade (Somente Leitura)';
-            }
-            
-            if (searchTerm) {
-                pelotoesFiltrados = pelotoesFiltrados.filter(p => 
-                    p.material_nome.toLowerCase().includes(searchTerm)
-                );
-            }
-            
-            const pelotoesAgrupados = {};
-            pelotoesFiltrados.forEach(item => {
-                if (!pelotoesAgrupados[item.pelotao]) {
-                    pelotoesAgrupados[item.pelotao] = [];
-                }
-                pelotoesAgrupados[item.pelotao].push(item);
-            });
-            
-            if (Object.keys(pelotoesAgrupados).length === 0) {
-                container.innerHTML = `<div class="section-card" style="text-align: center;"><i class="fas fa-inbox" style="font-size: 3rem;"></i><p>Nenhum material encontrado.</p></div>`;
-                return;
-            }
-            
-            const podeEditar = !isReadOnly;
-            
-            container.innerHTML = Object.entries(pelotoesAgrupados).map(([pelotaoNome, itens]) => {
-                const totalItens = itens.reduce((sum, i) => sum + i.quantidade, 0);
-                
-                return `
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h2><i class="fas fa-box"></i> ${pelotaoNome}</h2>
-                            <span style="background: var(--accent-light); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.7rem;">
-                                <i class="fas fa-boxes"></i> Total: ${totalItens} itens
-                            </span>
+            if (tipoRelatorioSelecionado === 'estoque_geral') {
+                container.innerHTML = `
+                    <div class="filter-section">
+                        <div class="filter-title"><i class="fas fa-filter"></i> Filtros</div>
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label>Categoria</label>
+                                <select id="filtroCategoria">
+                                    <option value="">Todas categorias</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Status</label>
+                                <select id="filtroStatus">
+                                    <option value="">Todos</option>
+                                    <option value="ATIVO">Ativos</option>
+                                    <option value="INATIVO">Inativos</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Busca</label>
+                                <input type="text" id="filtroBusca" placeholder="Código ou material...">
+                            </div>
                         </div>
-                        <div style="overflow-x: auto;">
-                            <table>
-                                <thead>
-                                    <tr><th>Código</th><th>Material</th><th>Quantidade</th><th>Mínimo</th><th>Status Estoque</th><th>Status Item</th>${podeEditar ? '<th>Ações</th>' : ''}</tr>
-                                </thead>
-                                <tbody>
-                                    ${itens.map(item => {
-                                        const produto = produtos.find(p => p.id === item.material_id);
-                                        const min = produto?.quantidade_total ? Math.floor(produto.quantidade_total * 0.3) : 10;
-                                        const statusEstoque = getStatusEstoque(item.quantidade, min);
-                                        const statusClass = statusEstoque === 'critico' ? 'badge-critico' : (statusEstoque === 'alerta' ? 'badge-alerta' : 'badge-normal');
-                                        const statusText = statusEstoque === 'critico' ? 'CRÍTICO' : (statusEstoque === 'alerta' ? 'ALERTA' : 'NORMAL');
-                                        return `
-                                            <tr>
-                                                <td>${item.codigo || '-'}</td>
-                                                <td><strong>${item.material_nome}</strong></td>
-                                                <td><strong>${item.quantidade}</strong></td>
-                                                <td>${min}</td>
-                                                <td><span class="badge-status ${statusClass}">${statusText}</span></td>
-                                                <td><span class="badge-status ${getStatusItemClass(item.status || 'DISPONIVEL')}">${getStatusItemText(item.status || 'DISPONIVEL')}</span></td>
-                                                ${podeEditar ? `
-                                                <td class="action-icons">
-                                                    <i class="fas fa-edit" onclick="openEditModal(${item.id}, '${item.material_nome.replace(/'/g, "\\'")}', ${item.quantidade})" title="Editar"></i>
-                                                    <i class="fas fa-exchange-alt" onclick="openStatusModal(${item.id}, '${item.material_nome.replace(/'/g, "\\'")}', '${item.status || 'DISPONIVEL'}')" title="Alterar Status"></i>
-                                                    <i class="fas fa-trash" onclick="openDeleteModal(${item.id}, '${item.material_nome.replace(/'/g, "\\'")}')" title="Excluir"></i>
-                                                </span>
-                                                ` : ''}
-                                            </tr>
-                                        `;
-                                    }).join('')}
-                                </tbody>
-                            </table>
-                        </div>
+                        <button class="btn-generate" id="btnAplicarFiltros">
+                            <i class="fas fa-search"></i> Aplicar Filtros
+                        </button>
                     </div>
                 `;
-            }).join('');
-        }
-
-        function renderizarTudo() {
-            renderizarStats();
-            renderizarPelotoes();
-        }
-
-        function openAddModal() {
-            // Verificar se o usuário pode adicionar
-            if (currentUser?.nivel === 'LEITURA') {
-                showToast('Usuário de leitura não pode adicionar produtos', true);
-                return;
-            }
-            
-            const isResp = currentUser?.nivel === 'RESP';
-            const pelotaoSelect = document.getElementById('addPelotao');
-            
-            if (isResp && currentUser?.pelotao) {
-                // RESP só pode adicionar no próprio pelotão
-                pelotaoSelect.innerHTML = `<option value="${currentUser.pelotao}">${currentUser.pelotao}</option>`;
-                pelotaoSelect.disabled = true;
-            } else {
-                pelotaoSelect.innerHTML = `
-                    <option value="">Selecione o pelotão</option>
-                    <option value="1º Pelotão">1º Pelotão</option>
-                    <option value="2º Pelotão">2º Pelotão</option>
-                    <option value="3º Pelotão">3º Pelotão</option>
+                carregarCategoriasFiltro();
+                document.getElementById('btnAplicarFiltros')?.addEventListener('click', () => renderizarPreview());
+            } 
+            else if (tipoRelatorioSelecionado === 'reserva_pelotoes') {
+                container.innerHTML = `
+                    <div class="filter-section">
+                        <div class="filter-title"><i class="fas fa-filter"></i> Filtros</div>
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label>Pelotão</label>
+                                <select id="filtroPelotao">
+                                    <option value="todos">Todos os pelotões</option>
+                                    <option value="1º Pelotão">1º Pelotão</option>
+                                    <option value="2º Pelotão">2º Pelotão</option>
+                                    <option value="3º Pelotão">3º Pelotão</option>
+                                    <option value="Material SUB">Material SUB</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Status Estoque</label>
+                                <select id="filtroStatusEstoque">
+                                    <option value="">Todos</option>
+                                    <option value="critico">Crítico</option>
+                                    <option value="alerta">Alerta</option>
+                                    <option value="normal">Normal</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Busca</label>
+                                <input type="text" id="filtroBuscaReserva" placeholder="Material...">
+                            </div>
+                        </div>
+                        <button class="btn-generate" id="btnAplicarFiltros">
+                            <i class="fas fa-search"></i> Aplicar Filtros
+                        </button>
+                    </div>
                 `;
-                pelotaoSelect.disabled = false;
+                document.getElementById('btnAplicarFiltros')?.addEventListener('click', () => renderizarPreview());
+            }
+            else if (tipoRelatorioSelecionado === 'movimentacoes') {
+                container.innerHTML = `
+                    <div class="filter-section">
+                        <div class="filter-title"><i class="fas fa-filter"></i> Filtros</div>
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label>Data Inicial</label>
+                                <input type="date" id="filtroDataInicio">
+                            </div>
+                            <div class="filter-group">
+                                <label>Data Final</label>
+                                <input type="date" id="filtroDataFim">
+                            </div>
+                            <div class="filter-group">
+                                <label>Tipo</label>
+                                <select id="filtroTipoMov">
+                                    <option value="">Todos</option>
+                                    <option value="CAUTELA">Cautelas</option>
+                                    <option value="DESCAUTELA">Descautelas</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Pelotão</label>
+                                <select id="filtroPelotaoMov">
+                                    <option value="">Todos</option>
+                                    <option value="1º Pelotão">1º Pelotão</option>
+                                    <option value="2º Pelotão">2º Pelotão</option>
+                                    <option value="3º Pelotão">3º Pelotão</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-generate" id="btnAplicarFiltros">
+                            <i class="fas fa-search"></i> Aplicar Filtros
+                        </button>
+                    </div>
+                `;
+                document.getElementById('btnAplicarFiltros')?.addEventListener('click', () => renderizarPreview());
+            }
+            else if (tipoRelatorioSelecionado === 'itens_criticos') {
+                container.innerHTML = `
+                    <div class="filter-section">
+                        <div class="filter-title"><i class="fas fa-filter"></i> Filtros</div>
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label>Categoria</label>
+                                <select id="filtroCategoriaCriticos">
+                                    <option value="">Todas categorias</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-generate" id="btnAplicarFiltros">
+                            <i class="fas fa-search"></i> Aplicar Filtros
+                        </button>
+                    </div>
+                `;
+                carregarCategoriasFiltroCriticos();
+                document.getElementById('btnAplicarFiltros')?.addEventListener('click', () => renderizarPreview());
             }
             
-            document.getElementById('addModal').style.display = 'flex';
-            materialSelecionadoAdd = null;
-            document.getElementById('materialSearchAdd').value = '';
-            document.getElementById('materialIdAdd').value = '';
-            setTimeout(() => {
-                document.getElementById('materialSearchAdd').focus();
-            }, 100);
+            renderizarPreview();
         }
 
-        function closeAddModal() {
-            document.getElementById('addModal').style.display = 'none';
+        function carregarCategoriasFiltro() {
+            const select = document.getElementById('filtroCategoria');
+            if (!select) return;
+            const categorias = [...new Set(materiais.map(m => m.categoria))];
+            select.innerHTML = '<option value="">Todas categorias</option>' + 
+                categorias.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
-        async function confirmAdd() {
-            let pelotao = document.getElementById('addPelotao').value;
-            const materialId = document.getElementById('materialIdAdd').value;
-            const quantidade = parseInt(document.getElementById('addQuantidade').value);
+        function carregarCategoriasFiltroCriticos() {
+            const select = document.getElementById('filtroCategoriaCriticos');
+            if (!select) return;
+            const categorias = [...new Set(materiais.map(m => m.categoria))];
+            select.innerHTML = '<option value="">Todas categorias</option>' + 
+                categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function getStatusEstoque(disponivel, total) {
+            if (total === 0) return { status: 'critico', text: 'ESGOTADO', class: 'badge-critico' };
+            const percentual = (disponivel / total) * 100;
+            if (percentual <= 30) return { status: 'critico', text: 'CRÍTICO', class: 'badge-critico' };
+            if (percentual <= 60) return { status: 'alerta', text: 'ALERTA', class: 'badge-alerta' };
+            return { status: 'normal', text: 'NORMAL', class: 'badge-normal' };
+        }
+
+        function renderizarPreview() {
+            const previewContainer = document.getElementById('previewSection');
+            const previewContent = document.getElementById('previewContent');
             
-            // Se for RESP e o select estiver disabled, pegar o valor do select
-            if (currentUser?.nivel === 'RESP' && currentUser?.pelotao) {
-                pelotao = currentUser.pelotao;
+            if (tipoRelatorioSelecionado === 'estoque_geral') {
+                const categoria = document.getElementById('filtroCategoria')?.value || '';
+                const status = document.getElementById('filtroStatus')?.value || '';
+                const busca = document.getElementById('filtroBusca')?.value.toLowerCase() || '';
+                
+                let filtrados = materiais.filter(m => {
+                    if (categoria && m.categoria !== categoria) return false;
+                    if (status && m.status !== status) return false;
+                    if (busca && !m.codigo.toLowerCase().includes(busca) && !m.material.toLowerCase().includes(busca)) return false;
+                    return true;
+                });
+                
+                previewContainer.style.display = 'block';
+                previewContent.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr><th>Código</th><th>Material</th><th>Categoria</th><th>Total</th><th>Disponível</th><th>Status</th><th>Localização</th></tr>
+                        </thead>
+                        <tbody>
+                            ${filtrados.map(m => {
+                                const statusInfo = getStatusEstoque(m.quantidade_disponivel, m.quantidade_total);
+                                return `
+                                    <tr>
+                                        <td>${m.codigo}</td>
+                                        <td>${m.material}</td>
+                                        <td>${m.categoria}</td>
+                                        <td>${m.quantidade_total}</td>
+                                        <td>${m.quantidade_disponivel}</td>
+                                        <td><span class="badge ${statusInfo.class}">${statusInfo.text}</span></td>
+                                        <td>${m.localizacao || '-'}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                    ${filtrados.length === 0 ? '<p style="text-align: center; padding: 2rem;">Nenhum material encontrado</p>' : ''}
+                `;
             }
-            
-            if (!pelotao || !materialId || !quantidade || quantidade <= 0) {
-                showToast('Preencha todos os campos!', true);
-                return;
+            else if (tipoRelatorioSelecionado === 'reserva_pelotoes') {
+                const pelotao = document.getElementById('filtroPelotao')?.value || 'todos';
+                const statusEstoque = document.getElementById('filtroStatusEstoque')?.value || '';
+                const busca = document.getElementById('filtroBuscaReserva')?.value.toLowerCase() || '';
+                
+                let filtrados = [...estoquePelotoes];
+                if (pelotao !== 'todos') filtrados = filtrados.filter(i => i.pelotao === pelotao);
+                if (busca) filtrados = filtrados.filter(i => i.material_nome.toLowerCase().includes(busca));
+                
+                // Agrupar por pelotão
+                const agrupados = {};
+                filtrados.forEach(item => {
+                    if (!agrupados[item.pelotao]) agrupados[item.pelotao] = [];
+                    agrupados[item.pelotao].push(item);
+                });
+                
+                previewContainer.style.display = 'block';
+                previewContent.innerHTML = Object.entries(agrupados).map(([pelotaoNome, itens]) => `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--accent);">📦 ${pelotaoNome}</h3>
+                        <table>
+                            <thead><tr><th>Código</th><th>Material</th><th>Quantidade</th><th>Status Item</th></tr></thead>
+                            <tbody>
+                                ${itens.map(item => `
+                                    <tr>
+                                        <td>${item.codigo || '-'}</td>
+                                        <td>${item.material_nome}</td>
+                                        <td><strong>${item.quantidade}</strong></td>
+                                        <td>${item.status === 'DISPONIVEL' ? '📌 Disponível' : item.status === 'EM_USO' ? '🔧 Em Uso' : item.status === 'MANUTENCAO' ? '⚠️ Manutenção' : '❌ Extraviado'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `).join('');
+                if (Object.keys(agrupados).length === 0) previewContent.innerHTML = '<p style="text-align: center; padding: 2rem;">Nenhum material encontrado</p>';
             }
-            
-            const material = produtos.find(p => p.id == materialId);
-            if (!material) {
-                showToast('Material não encontrado!', true);
-                return;
+            else if (tipoRelatorioSelecionado === 'movimentacoes') {
+                const dataInicio = document.getElementById('filtroDataInicio')?.value || '';
+                const dataFim = document.getElementById('filtroDataFim')?.value || '';
+                const tipo = document.getElementById('filtroTipoMov')?.value || '';
+                const pelotao = document.getElementById('filtroPelotaoMov')?.value || '';
+                
+                let filtrados = [...movimentacoes];
+                if (dataInicio) filtrados = filtrados.filter(m => m.data?.split('/').reverse().join('-') >= dataInicio);
+                if (dataFim) filtrados = filtrados.filter(m => m.data?.split('/').reverse().join('-') <= dataFim);
+                if (tipo) filtrados = filtrados.filter(m => m.tipo === tipo);
+                if (pelotao) filtrados = filtrados.filter(m => m.pelotao === pelotao);
+                
+                previewContainer.style.display = 'block';
+                previewContent.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr><th>Data/Hora</th><th>Material</th><th>Tipo</th><th>Quantidade</th><th>Pelotão</th><th>Usuário</th></tr>
+                        </thead>
+                        <tbody>
+                            ${filtrados.slice(0, 50).map(m => `
+                                <tr>
+                                    <td>${m.data || '-'} ${m.hora || ''}</td>
+                                    <td>${m.material_nome}</td>
+                                    <td><span class="badge ${m.tipo === 'CAUTELA' ? 'badge-alerta' : 'badge-normal'}">${m.tipo === 'CAUTELA' ? '📤 SAÍDA' : '📥 DEVOLUÇÃO'}</span></td>
+                                    <td>${m.quantidade}</td>
+                                    <td>${m.pelotao}</td>
+                                    <td>${m.usuario}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    ${filtrados.length === 0 ? '<p style="text-align: center; padding: 2rem;">Nenhuma movimentação encontrada</p>' : ''}
+                `;
             }
-            
-            const result = await apiRequest('/api/estoque_pelotao', {
-                method: 'POST',
-                body: JSON.stringify({ 
-                    pelotao, 
-                    material_id: materialId, 
-                    material_nome: material.material, 
-                    quantidade, 
-                    status: 'DISPONIVEL' 
-                })
-            });
-            
-            if (result && result.success) {
-                showToast('Produto adicionado ao pelotão!');
-                closeAddModal();
-                carregarEstoquePelotao();
-            } else {
-                showToast(result?.message || 'Erro ao adicionar', true);
-            }
-        }
-
-        function openEditModal(id, materialNome, quantidade) {
-            editItemId = id;
-            document.getElementById('editMaterialNome').innerText = materialNome;
-            document.getElementById('editQuantidade').value = quantidade;
-            document.getElementById('editModal').style.display = 'flex';
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-            editItemId = null;
-        }
-
-        async function confirmEdit() {
-            const novaQuantidade = parseInt(document.getElementById('editQuantidade').value);
-            if (isNaN(novaQuantidade) || novaQuantidade < 0) {
-                showToast('Quantidade inválida!', true);
-                return;
-            }
-            
-            const result = await apiRequest(`/api/estoque_pelotao/${editItemId}`, {
-                method: 'PUT',
-                body: JSON.stringify({ quantidade: novaQuantidade })
-            });
-            
-            if (result && result.success) {
-                showToast('Quantidade atualizada!');
-                closeEditModal();
-                carregarEstoquePelotao();
-            } else {
-                showToast('Erro ao atualizar', true);
-            }
-        }
-
-        function openStatusModal(id, materialNome, statusAtual) {
-            statusItemId = id;
-            document.getElementById('statusItemNome').innerText = materialNome;
-            const select = document.getElementById('novoStatusItem');
-            select.value = statusAtual || 'DISPONIVEL';
-            document.getElementById('statusModal').style.display = 'flex';
-        }
-
-        function closeStatusModal() {
-            document.getElementById('statusModal').style.display = 'none';
-            statusItemId = null;
-        }
-
-        async function confirmStatus() {
-            const novoStatus = document.getElementById('novoStatusItem').value;
-            
-            const result = await apiRequest(`/api/estoque_pelotao/${statusItemId}/status`, {
-                method: 'PUT',
-                body: JSON.stringify({ status: novoStatus })
-            });
-            
-            if (result && result.success) {
-                showToast(`Status alterado para ${novoStatus}!`);
-                closeStatusModal();
-                carregarEstoquePelotao();
-            } else {
-                showToast('Erro ao alterar status', true);
-            }
-        }
-
-        function openDeleteModal(id, materialNome) {
-            deleteItemId = id;
-            document.getElementById('deleteItemName').innerText = materialNome;
-            document.getElementById('deleteModal').style.display = 'flex';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').style.display = 'none';
-            deleteItemId = null;
-        }
-
-        async function confirmDelete() {
-            const result = await apiRequest(`/api/estoque_pelotao/${deleteItemId}`, { method: 'DELETE' });
-            
-            if (result && result.success) {
-                showToast('Item removido com sucesso!');
-                closeDeleteModal();
-                carregarEstoquePelotao();
-            } else {
-                showToast('Erro ao remover item', true);
+            else if (tipoRelatorioSelecionado === 'itens_criticos') {
+                const categoria = document.getElementById('filtroCategoriaCriticos')?.value || '';
+                
+                let filtrados = materiais.filter(m => {
+                    const statusInfo = getStatusEstoque(m.quantidade_disponivel, m.quantidade_total);
+                    if (statusInfo.status !== 'critico') return false;
+                    if (categoria && m.categoria !== categoria) return false;
+                    return true;
+                });
+                
+                previewContainer.style.display = 'block';
+                previewContent.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr><th>Código</th><th>Material</th><th>Categoria</th><th>Total</th><th>Disponível</th><th>Necessidade</th><th>Localização</th></tr>
+                        </thead>
+                        <tbody>
+                            ${filtrados.map(m => {
+                                const necessidade = Math.ceil(m.quantidade_total * 0.7);
+                                return `
+                                    <tr>
+                                        <td>${m.codigo}</td>
+                                        <td>${m.material}</td>
+                                        <td>${m.categoria}</td>
+                                        <td>${m.quantidade_total}</td>
+                                        <td><strong style="color: var(--danger);">${m.quantidade_disponivel}</strong></td>
+                                        <td>${necessidade} unidades</td>
+                                        <td>${m.localizacao || '-'}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                    ${filtrados.length === 0 ? '<p style="text-align: center; padding: 2rem;">Nenhum item com estoque crítico encontrado</p>' : ''}
+                `;
             }
         }
 
         async function exportarPDF() {
-            const pdfBtn = document.getElementById('btnExportarPDF');
+            const btn = document.getElementById('btnExportarPDF');
             
-            if (!estoquePelotoes || estoquePelotoes.length === 0) {
-                showToast('Não há dados para exportar!', true);
-                return;
+            let dadosParaExportar = {};
+            
+            if (tipoRelatorioSelecionado === 'estoque_geral') {
+                const categoria = document.getElementById('filtroCategoria')?.value || '';
+                const status = document.getElementById('filtroStatus')?.value || '';
+                const busca = document.getElementById('filtroBusca')?.value || '';
+                
+                let filtrados = materiais.filter(m => {
+                    if (categoria && m.categoria !== categoria) return false;
+                    if (status && m.status !== status) return false;
+                    if (busca && !m.codigo.toLowerCase().includes(busca.toLowerCase()) && !m.material.toLowerCase().includes(busca.toLowerCase())) return false;
+                    return true;
+                });
+                
+                dadosParaExportar = {
+                    tipo: 'estoque_geral',
+                    dados: filtrados,
+                    titulo: 'Relatório de Estoque Geral',
+                    usuario: currentUser
+                };
+            }
+            else if (tipoRelatorioSelecionado === 'reserva_pelotoes') {
+                const pelotao = document.getElementById('filtroPelotao')?.value || 'todos';
+                const busca = document.getElementById('filtroBuscaReserva')?.value || '';
+                
+                let filtrados = [...estoquePelotoes];
+                if (pelotao !== 'todos') filtrados = filtrados.filter(i => i.pelotao === pelotao);
+                if (busca) filtrados = filtrados.filter(i => i.material_nome.toLowerCase().includes(busca.toLowerCase()));
+                
+                dadosParaExportar = {
+                    tipo: 'reserva_pelotoes',
+                    dados: filtrados,
+                    titulo: 'Relatório de Reserva dos Pelotões',
+                    usuario: currentUser,
+                    pelotao_filtro: pelotao
+                };
+            }
+            else if (tipoRelatorioSelecionado === 'movimentacoes') {
+                const dataInicio = document.getElementById('filtroDataInicio')?.value || '';
+                const dataFim = document.getElementById('filtroDataFim')?.value || '';
+                const tipo = document.getElementById('filtroTipoMov')?.value || '';
+                const pelotao = document.getElementById('filtroPelotaoMov')?.value || '';
+                
+                let filtrados = [...movimentacoes];
+                if (dataInicio) filtrados = filtrados.filter(m => m.data?.split('/').reverse().join('-') >= dataInicio);
+                if (dataFim) filtrados = filtrados.filter(m => m.data?.split('/').reverse().join('-') <= dataFim);
+                if (tipo) filtrados = filtrados.filter(m => m.tipo === tipo);
+                if (pelotao) filtrados = filtrados.filter(m => m.pelotao === pelotao);
+                
+                dadosParaExportar = {
+                    tipo: 'movimentacoes',
+                    dados: filtrados,
+                    titulo: 'Relatório de Movimentações',
+                    usuario: currentUser
+                };
+            }
+            else if (tipoRelatorioSelecionado === 'itens_criticos') {
+                const categoria = document.getElementById('filtroCategoriaCriticos')?.value || '';
+                
+                let filtrados = materiais.filter(m => {
+                    const statusInfo = getStatusEstoque(m.quantidade_disponivel, m.quantidade_total);
+                    if (statusInfo.status !== 'critico') return false;
+                    if (categoria && m.categoria !== categoria) return false;
+                    return true;
+                });
+                
+                dadosParaExportar = {
+                    tipo: 'itens_criticos',
+                    dados: filtrados,
+                    titulo: 'Relatório de Itens com Estoque Crítico',
+                    usuario: currentUser
+                };
             }
             
-            pdfBtn.disabled = true;
-            pdfBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Gerando PDF...';
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Gerando PDF...';
             
             try {
-                const dataToExport = {
-                    usuario: {
-                        nome: currentUser?.nome || 'N/A',
-                        nivel: currentUser?.nivel || 'N/A',
-                        pelotao: currentUser?.pelotao || null
-                    },
-                    estoque: estoquePelotoes,
-                    produtos: produtos,
-                    data: new Date().toLocaleString(),
-                    totalGeral: estoquePelotoes.reduce((s, i) => s + (i.quantidade || 0), 0)
-                };
-                
-                const response = await fetch('/api/exportar_reserva_pdf', {
+                const response = await fetch('/api/exportar_relatorio_pdf', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dataToExport),
+                    body: JSON.stringify(dadosParaExportar),
                     credentials: 'same-origin'
                 });
                 
@@ -1219,7 +1097,7 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `reserva_pelotoes_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.pdf`;
+                    a.download = `${tipoRelatorioSelecionado}_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.pdf`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -1227,30 +1105,26 @@
                     showToast('PDF exportado com sucesso!');
                 } else {
                     const error = await response.text();
-                    console.error('Erro PDF:', error);
                     showToast('Erro ao gerar PDF: ' + (error || 'Erro desconhecido'), true);
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                showToast('Erro de conexão ao gerar PDF', true);
+                showToast('Erro ao gerar PDF', true);
             } finally {
-                pdfBtn.disabled = false;
-                pdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Exportar PDF';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Exportar PDF';
             }
         }
 
-        function configurarPermissoes() {
-            const isAdmin = currentUser?.nivel === 'DEV' || currentUser?.nivel === 'SUB';
-            const isResp = currentUser?.nivel === 'RESP';
-            const isReadOnly = currentUser?.nivel === 'LEITURA';
-            
-            const btnAdd = document.getElementById('btnAddProduto');
-            
-            if (isReadOnly) {
-                if (btnAdd) btnAdd.style.display = 'none';
-            } else {
-                if (btnAdd) btnAdd.style.display = 'flex';
-            }
+        function configurarCards() {
+            document.querySelectorAll('.report-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.report-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    tipoRelatorioSelecionado = card.getAttribute('data-tipo');
+                    renderizarFiltros();
+                });
+            });
         }
 
         async function loadUser() {
@@ -1266,13 +1140,8 @@
                 else roleText = '<i class="fas fa-eye"></i> Leitura';
                 document.getElementById('userRole').innerHTML = roleText;
                 document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
-                
-                configurarPermissoes();
                 return currentUser;
-            } catch (error) {
-                window.location.href = '/';
-                return null;
-            }
+            } catch (error) { window.location.href = '/'; return null; }
         }
 
         async function logout() {
@@ -1297,31 +1166,19 @@
             btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
         });
         
-        document.getElementById('searchInput')?.addEventListener('input', renderizarPelotoes);
-        document.getElementById('btnAddProduto')?.addEventListener('click', openAddModal);
         document.getElementById('btnExportarPDF')?.addEventListener('click', exportarPDF);
-        document.getElementById('confirmAddBtn')?.addEventListener('click', confirmAdd);
-        document.getElementById('confirmEditBtn')?.addEventListener('click', confirmEdit);
-        document.getElementById('confirmStatusBtn')?.addEventListener('click', confirmStatus);
-        document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
-        
-        document.getElementById('materialSearchAdd')?.addEventListener('input', renderizarDropdownAdd);
-        document.getElementById('materialSearchAdd')?.addEventListener('focus', renderizarDropdownAdd);
-        document.addEventListener('click', fecharDropdownAdd);
-        
-        window.selecionarMaterialAdd = selecionarMaterialAdd;
-        window.openEditModal = openEditModal;
-        window.closeEditModal = closeEditModal;
-        window.openStatusModal = openStatusModal;
-        window.closeStatusModal = closeStatusModal;
-        window.openDeleteModal = openDeleteModal;
-        window.closeDeleteModal = closeDeleteModal;
-        window.closeAddModal = closeAddModal;
         
         async function init() {
             initTheme();
-            await loadUser();
-            await carregarEstoquePelotao();
+            const user = await loadUser();
+            
+            if (!user || (user.nivel !== 'DEV' && user.nivel !== 'SUB')) {
+                renderizarAcessoNegado();
+                return;
+            }
+            
+            await carregarDados();
+            configurarCards();
         }
         
         init();
