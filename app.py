@@ -1123,8 +1123,8 @@ def api_exportar_reserva_pdf():
             download_name=f'reserva_pelotoes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
             mimetype='application/pdf'
         )
-    except ImportError:
-        return jsonify({'success': False, 'message': 'Biblioteca reportlab não instalada. Execute: pip install reportlab'}), 500
+    except ImportError as e:
+        return jsonify({'success': False, 'message': f'Erro de importação ReportLab: {str(e)}'}), 500
     except Exception as e:
         import traceback
         traceback.print_exc()
