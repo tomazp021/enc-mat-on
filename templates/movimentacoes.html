@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ENC-MAT · Movimentações</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #eef2f8;
+            --bg-card: #ffffff;
+            --bg-sidebar: #ffffff;
+            --text-primary: #1a2c3e;
+            --text-secondary: #4a627a;
+            --accent: #1e5a8a;
+            --accent-hover: #0e3f62;
+            --accent-light: #e8f0f8;
+            --border: #dce5ec;
+            --danger: #c44a3a;
+            --success: #2a7a4a;
+            --warning: #d48a2a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.1);
+            --input-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-primary: #121826;
+            --bg-card: #1a2332;
+            --bg-sidebar: #1a2332;
+            --text-primary: #e8edf5;
+            --text-secondary: #9aacc8;
+            --accent: #3a8cbb;
+            --accent-hover: #5da3cf;
+            --accent-light: #1e2a3a;
+            --border: #2d3a4a;
+            --danger: #d96c5c;
+            --success: #5a9a6a;
+            --warning: #d4a43a;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --input-bg: #111827;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+
+        .logo-area {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .logo-area .logo-icon {
+            background: var(--accent-light);
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-area .logo-icon i {
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        .logo-area h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .logo-area p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info-sidebar {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .user-info-sidebar h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+        .user-info-sidebar .user-role {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .user-info-sidebar .user-pelotao {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-menu li {
+            margin-bottom: 0.3rem;
+        }
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .nav-menu a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .nav-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-menu a i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .logout-btn-sidebar {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .logout-btn-sidebar button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .logout-btn-sidebar button:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .theme-toggle {
+            background: var(--accent-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Section Card */
+        .section-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .section-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Formulário */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+        select, input, textarea {
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .btn-add {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-add:hover {
+            background: var(--accent-hover);
+            transform: scale(0.98);
+        }
+
+        /* Tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+        td {
+            font-size: 0.85rem;
+        }
+        .badge-tipo {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-entrada { background: var(--success); color: white; }
+        .badge-saida { background: var(--warning); color: white; }
+        .badge-devolucao { background: var(--info); color: white; }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .filter-bar select, .filter-bar input {
+            width: auto;
+            min-width: 150px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 80px; padding: 1rem 0.5rem; }
+            .sidebar .logo-area h2, .sidebar .logo-area p,
+            .sidebar .user-info-sidebar h4, .sidebar .user-info-sidebar .user-role,
+            .sidebar .user-info-sidebar .user-pelotao,
+            .nav-menu a span { display: none; }
+            .sidebar .logo-icon { width: 45px; height: 45px; }
+            .nav-menu a { justify-content: center; padding: 0.8rem; }
+            .nav-menu a i { margin: 0; }
+            .main-content { margin-left: 80px; }
+            table { display: block; overflow-x: auto; }
+            .filter-bar { flex-direction: column; }
+            .filter-bar select, .filter-bar input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+            <h2>ENC·MAT</h2>
+            <p>Controle de Estoque</p>
+        </div>
+        <div class="user-info-sidebar" id="sidebarUserInfo">
+            <i class="fas fa-user-shield"></i>
+            <h4 id="userName">Carregando...</h4>
+            <div class="user-role" id="userRole"></div>
+            <div class="user-pelotao" id="userPelotao"></div>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="estoque.html"><i class="fas fa-cubes"></i> <span>Estoque Geral</span></a></li>
+            <li><a href="estoque_pelotao.html"><i class="fas fa-users"></i> <span>Estoque por Pelotão</span></a></li>
+            <li><a href="movimentacoes.html" class="active"><i class="fas fa-exchange-alt"></i> <span>Movimentações</span></a></li>
+            <li><a href="log.html"><i class="fas fa-history"></i> <span>LOG / Auditoria</span></a></li>
+            <li><a href="relatorios.html"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+            <li><a href="cadastro_produto.html"><i class="fas fa-plus-circle"></i> <span>Cadastrar Produto</span></a></li>
+            <li><a href="usuarios.html"><i class="fas fa-users-cog"></i> <span>Gestão de Usuários</span></a></li>
+            <li><a href="pelotoes.html"><i class="fas fa-building"></i> <span>Gestão de Pelotões</span></a></li>
+        </ul>
+        <div class="logout-btn-sidebar">
+            <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Sair do Sistema</span></button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <h1><i class="fas fa-exchange-alt"></i> Movimentações</h1>
+                <p>Registro de entradas, saídas e devoluções de material</p>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+            </button>
+        </div>
+
+        <!-- Formulário de Nova Movimentação -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2><i class="fas fa-plus-circle"></i> Nova Movimentação</h2>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Tipo</label>
+                    <select id="tipoMov">
+                        <option value="Entrada">📥 Entrada (Reposição)</option>
+                        <option value="Saída">📤 Saída (Distribuição)</option>
+                        <option value="Devolução">🔄 Devolução</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-box"></i> Produto</label>
+                    <select id="produtoMov"></select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-sort-numeric-up"></i> Quantidade</label>
+                    <input type="number" id="qtdMov" placeholder="Quantidade" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-location-dot"></i> Origem/Destino</label>
+                    <select id="destinoMov">
+                        <option value="Estoque Geral">Estoque Geral</option>
+                        <option value="1º Pelotão">1º Pelotão</option>
+                        <option value="2º Pelotão">2º Pelotão</option>
+                        <option value="3º Pelotão">3º Pelotão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-comment"></i> Observação</label>
+                    <input type="text" id="obsMov" placeholder="Observação (opcional)">
+                </div>
+            </div>
+            <button class="btn-add" id="registrarBtn">
+                <i class="fas fa-save"></i> Registrar Movimentação
+            </button>
+        </div>
+
+        <!-- Histórico de Movimentações -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2><i class="fas fa-history"></i> Histórico de Movimentações</h2>
+                <span style="font-size: 0.7rem; color: var(--text-secondary);">
+                    <i class="fas fa-shield-alt"></i> LOG permanente - registros imutáveis
+                </span>
+            </div>
+            
+            <!-- Filtros -->
+            <div class="filter-bar">
+                <select id="filtroTipo">
+                    <option value="todos">Todos os tipos</option>
+                    <option value="Entrada">Entradas</option>
+                    <option value="Saída">Saídas</option>
+                    <option value="Devolução">Devoluções</option>
+                </select>
+                <select id="filtroProduto">
+                    <option value="todos">Todos os produtos</option>
+                </select>
+                <input type="text" id="filtroBusca" placeholder="Buscar por responsável ou destino...">
+                <button class="btn-add" id="limparFiltros" style="background: var(--border); color: var(--text-primary);">Limpar Filtros</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table id="movTable">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Produto</th>
+                            <th>Tipo</th>
+                            <th>Quantidade</th>
+                            <th>Responsável</th>
+                            <th>Origem/Destino</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="movList"></tbody>
+                </table>
+            </div>
+            <div id="semRegistros" style="text-align: center; padding: 2rem; color: var(--text-secondary); display: none;">
+                <i class="fas fa-inbox"></i> Nenhuma movimentação encontrada
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // ============================================
+    // DADOS GLOBAIS
+    // ============================================
+    let currentUser = null;
+    
+    // Produtos disponíveis
+    let produtos = [
+        { id: 1, nome: "Fuzil IA2", codigo: "ARM-001", categoria: "Armamento" },
+        { id: 2, nome: "Munição 5.56mm", codigo: "MUN-001", categoria: "Munição" },
+        { id: 3, nome: "Capacete Balístico", codigo: "EPI-001", categoria: "Equipamento" },
+        { id: 4, nome: "Colete Balístico", codigo: "EPI-002", categoria: "Equipamento" },
+        { id: 5, nome: "Rádio Comunicador", codigo: "COM-001", categoria: "Comunicação" },
+        { id: 6, nome: "Granada de mão", codigo: "EXP-001", categoria: "Explosivo" },
+        { id: 7, nome: "Kit Médico", codigo: "MED-001", categoria: "Medicamento" },
+        { id: 8, nome: "Lanterna Tática", codigo: "ACC-001", categoria: "Acessório" }
+    ];
+
+    // Movimentações (histórico)
+    let movimentacoes = [
+        { id: 1, data: new Date().toLocaleString(), produto: "Fuzil IA2", tipo: "Entrada", qtd: 5, responsavel: "Administrador", destino: "Estoque Geral", obs: "Reposição mensal" },
+        { id: 2, data: new Date().toLocaleString(), produto: "Munição 5.56mm", tipo: "Saída", qtd: 200, responsavel: "Resp. 1º Pelotão", destino: "1º Pelotão", obs: "Instrução de tiro" },
+        { id: 3, data: new Date().toLocaleString(), produto: "Capacete Balístico", tipo: "Saída", qtd: 3, responsavel: "Resp. 2º Pelotão", destino: "2º Pelotão", obs: "Distribuição" },
+        { id: 4, data: new Date().toLocaleString(), produto: "Rádio Comunicador", tipo: "Devolução", qtd: 2, responsavel: "Resp. 3º Pelotão", destino: "Estoque Geral", obs: "Manutenção" }
+    ];
+    let nextId = 5;
+
+    // Estoque geral (para validação de saída)
+    let estoqueGeral = {
+        1: 45,  // Fuzil IA2
+        2: 2800, // Munição
+        3: 38,  // Capacete
+        4: 42,  // Colete
+        5: 12,  // Rádio
+        6: 8,   // Granada
+        7: 25,  // Kit Médico
+        8: 52   // Lanterna
+    };
+
+    // Estoque dos pelotões
+    let pelotoesEstoque = {
+        "1º Pelotão": { 1: 8, 2: 400, 3: 6, 4: 7, 5: 2, 6: 1, 7: 3, 8: 5 },
+        "2º Pelotão": { 1: 7, 2: 350, 3: 5, 4: 6, 5: 2, 6: 1, 7: 2, 8: 4 },
+        "3º Pelotão": { 1: 6, 2: 300, 3: 4, 4: 5, 5: 1, 6: 0, 7: 2, 8: 3 }
+    };
+
+    // Salvar dados no localStorage
+    function salvarMovimentacoes() {
+        localStorage.setItem('encmat_movimentacoes', JSON.stringify(movimentacoes));
+        localStorage.setItem('encmat_estoqueGeral', JSON.stringify(estoqueGeral));
+        localStorage.setItem('encmat_pelotoesEstoque', JSON.stringify(pelotoesEstoque));
+    }
+
+    function carregarDados() {
+        const savedMov = localStorage.getItem('encmat_movimentacoes');
+        if (savedMov) movimentacoes = JSON.parse(savedMov);
+        const savedEstoque = localStorage.getItem('encmat_estoqueGeral');
+        if (savedEstoque) estoqueGeral = JSON.parse(savedEstoque);
+        const savedPelotoes = localStorage.getItem('encmat_pelotoesEstoque');
+        if (savedPelotoes) pelotoesEstoque = JSON.parse(savedPelotoes);
+    }
+
+    // ============================================
+    // FUNÇÕES DE RENDERIZAÇÃO
+    // ============================================
+    function carregarProdutosSelect() {
+        const select = document.getElementById('produtoMov');
+        select.innerHTML = produtos.map(p => `<option value="${p.nome}" data-id="${p.id}">${p.nome} (${p.codigo})</option>`).join('');
+        
+        const filtroProduto = document.getElementById('filtroProduto');
+        filtroProduto.innerHTML = '<option value="todos">Todos os produtos</option>' + 
+            produtos.map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+    }
+
+    function getTipoBadge(tipo) {
+        if (tipo === 'Entrada') return '<span class="badge-tipo badge-entrada"><i class="fas fa-arrow-down"></i> Entrada</span>';
+        if (tipo === 'Saída') return '<span class="badge-tipo badge-saida"><i class="fas fa-arrow-up"></i> Saída</span>';
+        return '<span class="badge-tipo badge-devolucao"><i class="fas fa-undo"></i> Devolução</span>';
+    }
+
+    function renderizarMovimentacoes() {
+        const tipoFiltro = document.getElementById('filtroTipo').value;
+        const produtoFiltro = document.getElementById('filtroProduto').value;
+        const buscaFiltro = document.getElementById('filtroBusca').value.toLowerCase();
+        
+        let filtrados = [...movimentacoes];
+        
+        if (tipoFiltro !== 'todos') {
+            filtrados = filtrados.filter(m => m.tipo === tipoFiltro);
+        }
+        if (produtoFiltro !== 'todos') {
+            filtrados = filtrados.filter(m => m.produto === produtoFiltro);
+        }
+        if (buscaFiltro) {
+            filtrados = filtrados.filter(m => 
+                m.responsavel.toLowerCase().includes(buscaFiltro) || 
+                m.destino.toLowerCase().includes(buscaFiltro)
+            );
+        }
+        
+        // Ordenar por data (mais recentes primeiro)
+        filtrados.reverse();
+        
+        const tbody = document.getElementById('movList');
+        const semRegistros = document.getElementById('semRegistros');
+        
+        if (filtrados.length === 0) {
+            tbody.innerHTML = '';
+            semRegistros.style.display = 'block';
+            return;
+        }
+        
+        semRegistros.style.display = 'none';
+        tbody.innerHTML = filtrados.map(m => `
+            <tr>
+                <td style="white-space: nowrap;">${m.data}</td>
+                <td><strong>${m.produto}</strong></td>
+                <td>${getTipoBadge(m.tipo)}</td>
+                <td>${m.tipo === 'Entrada' ? '+' : '-'}${m.qtd}</td>
+                <td>${m.responsavel}</td>
+                <td>${m.destino}</td>
+                <td>${m.obs || '-'}</td>
+            </tr>
+        `).join('');
+    }
+
+    // ============================================
+    // REGISTRAR MOVIMENTAÇÃO
+    // ============================================
+    function registrarMovimentacao() {
+        const tipo = document.getElementById('tipoMov').value;
+        const produtoNome = document.getElementById('produtoMov').value;
+        const qtd = parseInt(document.getElementById('qtdMov').value);
+        const destino = document.getElementById('destinoMov').value;
+        const obs = document.getElementById('obsMov').value;
+        
+        if (!produtoNome || isNaN(qtd) || qtd <= 0) {
+            alert('Preencha todos os campos corretamente!');
+            return;
+        }
+        
+        const produto = produtos.find(p => p.nome === produtoNome);
+        if (!produto) return;
+        
+        const responsavel = currentUser?.nome || 'Sistema';
+        
+        // Validação baseada no tipo
+        if (tipo === 'Saída') {
+            // Verifica se tem estoque disponível
+            if (destino === 'Estoque Geral') {
+                if ((estoqueGeral[produto.id] || 0) < qtd) {
+                    alert(`Estoque insuficiente no Estoque Geral! Disponível: ${estoqueGeral[produto.id] || 0}`);
+                    return;
+                }
+                estoqueGeral[produto.id] = (estoqueGeral[produto.id] || 0) - qtd;
+            } else {
+                // Saída para pelotão - verifica no estoque geral
+                if ((estoqueGeral[produto.id] || 0) < qtd) {
+                    alert(`Estoque insuficiente no Estoque Geral! Disponível: ${estoqueGeral[produto.id] || 0}`);
+                    return;
+                }
+                estoqueGeral[produto.id] = (estoqueGeral[produto.id] || 0) - qtd;
+                // Adiciona ao pelotão
+                if (!pelotoesEstoque[destino]) pelotoesEstoque[destino] = {};
+                pelotoesEstoque[destino][produto.id] = (pelotoesEstoque[destino][produto.id] || 0) + qtd;
+            }
+        } 
+        else if (tipo === 'Devolução') {
+            // Devolução do pelotão para o estoque geral
+            if (pelotoesEstoque[destino] && (pelotoesEstoque[destino][produto.id] || 0) < qtd) {
+                alert(`Estoque insuficiente no ${destino}! Disponível: ${pelotoesEstoque[destino][produto.id] || 0}`);
+                return;
+            }
+            if (pelotoesEstoque[destino]) {
+                pelotoesEstoque[destino][produto.id] = (pelotoesEstoque[destino][produto.id] || 0) - qtd;
+            }
+            estoqueGeral[produto.id] = (estoqueGeral[produto.id] || 0) + qtd;
+        }
+        else if (tipo === 'Entrada') {
+            // Entrada no estoque geral
+            estoqueGeral[produto.id] = (estoqueGeral[produto.id] || 0) + qtd;
+        }
+        
+        // Registrar movimentação
+        const novaMov = {
+            id: nextId++,
+            data: new Date().toLocaleString(),
+            produto: produtoNome,
+            tipo: tipo,
+            qtd: qtd,
+            responsavel: responsavel,
+            destino: destino,
+            obs: obs || ''
+        };
+        movimentacoes.push(novaMov);
+        
+        // Salvar dados
+        salvarMovimentacoes();
+        
+        // Limpar campos
+        document.getElementById('qtdMov').value = '1';
+        document.getElementById('obsMov').value = '';
+        
+        // Recarregar tabela
+        renderizarMovimentacoes();
+        
+        alert(`Movimentação registrada com sucesso!\n${tipo}: ${qtd} x ${produtoNome}`);
+    }
+
+    // ============================================
+    // FILTROS
+    // ============================================
+    function aplicarFiltros() {
+        renderizarMovimentacoes();
+    }
+    
+    function limparFiltros() {
+        document.getElementById('filtroTipo').value = 'todos';
+        document.getElementById('filtroProduto').value = 'todos';
+        document.getElementById('filtroBusca').value = '';
+        renderizarMovimentacoes();
+    }
+
+    // ============================================
+    // AUTENTICAÇÃO E TEMA
+    // ============================================
+    function loadUser() {
+        const userData = localStorage.getItem('encmat_user');
+        if (!userData) {
+            window.location.href = "index.html";
+            return null;
+        }
+        currentUser = JSON.parse(userData);
+        document.getElementById('userName').innerText = currentUser.nome;
+        document.getElementById('userRole').innerHTML = currentUser.nivel === 'ADMIN' ? '<i class="fas fa-crown"></i> Administrador' : 
+                                                      (currentUser.nivel === 'SUB_TENENTE' ? '<i class="fas fa-eye"></i> Sub Tenente' : 
+                                                      '<i class="fas fa-users"></i> Responsável');
+        document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
+        return currentUser;
+    }
+
+    function logout() {
+        localStorage.removeItem('encmat_user');
+        window.location.href = "index.html";
+    }
+
+    function initTheme() {
+        if (localStorage.getItem('encmat_theme') === 'dark') {
+            document.body.classList.add('dark');
+            const toggleBtn = document.getElementById('themeToggle');
+            if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-sun"></i> <span>Modo Claro</span>';
+        }
+    }
+
+    document.getElementById('themeToggle')?.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        localStorage.setItem('encmat_theme', isDark ? 'dark' : 'light');
+        const toggleBtn = document.getElementById('themeToggle');
+        if (toggleBtn) {
+            toggleBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
+        }
+    });
+
+    // Eventos
+    document.getElementById('registrarBtn')?.addEventListener('click', registrarMovimentacao);
+    document.getElementById('filtroTipo')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroProduto')?.addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroBusca')?.addEventListener('input', aplicarFiltros);
+    document.getElementById('limparFiltros')?.addEventListener('click', limparFiltros);
+    
+    // Enter no campo quantidade
+    document.getElementById('qtdMov')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') registrarMovimentacao();
+    });
+
+    // ============================================
+    // INICIALIZAÇÃO
+    // ============================================
+    carregarDados();
+    loadUser();
+    initTheme();
+    carregarProdutosSelect();
+    renderizarMovimentacoes();
+</script>
+</body>
+</html>

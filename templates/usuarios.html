@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ENC-MAT · Gerenciar Usuários</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #e8f0e8;
+            --bg-card: #ffffff;
+            --bg-sidebar: #f5faf5;
+            --text-primary: #1a2c1a;
+            --text-secondary: #4a6a4a;
+            --accent: #2d6a4f;
+            --accent-hover: #1b4d3e;
+            --accent-light: #d4e8d4;
+            --border: #c0d4c0;
+            --danger: #c44a3a;
+            --success: #2a7a4a;
+            --warning: #d48a2a;
+            --info: #2a6a8a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --input-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-primary: #0a1a0f;
+            --bg-card: #1a2a1f;
+            --bg-sidebar: #0f1f14;
+            --text-primary: #e8f0e8;
+            --text-secondary: #a0c0a0;
+            --accent: #c9a53b;
+            --accent-hover: #dbb84e;
+            --accent-light: #2a3a2a;
+            --border: #3a5a3a;
+            --danger: #d96c5c;
+            --success: #5a9a6a;
+            --warning: #d4a43a;
+            --info: #4a8aaa;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-hover: 0 12px 32px rgba(0,0,0,0.5);
+            --input-bg: #2a3a2a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--accent);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding-top: 70px;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.show {
+                display: block;
+            }
+        }
+
+        .logo-area {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .logo-area .logo-icon {
+            background: var(--accent-light);
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-area .logo-icon i {
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        .logo-area h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .logo-area p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info-sidebar {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .user-info-sidebar h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            word-break: break-word;
+        }
+        .user-info-sidebar .user-role {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .user-info-sidebar .user-pelotao {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-menu li {
+            margin-bottom: 0.3rem;
+        }
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .nav-menu a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .nav-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-menu a i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .logout-btn-sidebar {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .logout-btn-sidebar button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .logout-btn-sidebar button:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .theme-toggle {
+            background: var(--accent-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .access-denied {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: 20px;
+            margin: 1rem;
+        }
+        .access-denied i {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        .access-denied h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--danger);
+        }
+        .access-denied p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        .btn-voltar {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .btn-voltar:hover {
+            background: var(--accent-hover);
+        }
+
+        .users-container {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+        }
+        .search-input i {
+            color: var(--text-secondary);
+        }
+        .search-input input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .btn-add {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        .btn-add:hover {
+            background: var(--accent-hover);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+        td {
+            font-size: 0.85rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-dev { background: #9b59b6; color: white; }
+        .badge-sub { background: #e67e22; color: white; }
+        .badge-resp { background: #3498db; color: white; }
+        .badge-leitura { background: #95a5a6; color: white; }
+        .badge-success { background: #2a7a4a; color: white; }
+        .badge-danger { background: #c44a3a; color: white; }
+        .action-icons i {
+            margin: 0 0.3rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+            font-size: 1rem;
+        }
+        .action-icons i:hover {
+            color: var(--accent);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        .info-text {
+            font-size: 0.7rem;
+            margin: -0.5rem 0 0.5rem 0;
+            color: var(--text-secondary);
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        .modal-buttons button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-save {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            border: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-top: 70px;
+            }
+            .search-bar {
+                flex-direction: column;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .btn-add {
+                width: 100%;
+                justify-content: center;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .page-title h1 {
+                font-size: 1.2rem;
+            }
+            table {
+                font-size: 0.75rem;
+            }
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+                <h2>ENC·MAT</h2>
+                <p>Controle de Estoque</p>
+            </div>
+            <div class="user-info-sidebar" id="sidebarUserInfo">
+                <i class="fas fa-user-shield"></i>
+                <h4 id="userName">Carregando...</h4>
+                <div class="user-role" id="userRole"></div>
+                <div class="user-pelotao" id="userPelotao"></div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/estoque_companhia"><i class="fas fa-cubes"></i> <span>Estoque Companhia</span></a></li>
+                <li><a href="/reserva_pelotao"><i class="fas fa-users"></i> <span>Reserva Pelotão</span></a></li>
+                <li><a href="/cautela"><i class="fas fa-exchange-alt"></i> <span>Cautela</span></a></li>
+                <li><a href="/historico"><i class="fas fa-history"></i> <span>Histórico</span></a></li>
+                <li><a href="/relatorios"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+                <li><a href="/usuarios" class="active"><i class="fas fa-users-cog"></i> <span>Usuários</span></a></li>
+                <li><a href="/configuracoes"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
+            </ul>
+            <div class="logout-btn-sidebar">
+                <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-users-cog"></i> Gerenciar Usuários</h1>
+                    <p>Cadastro com login, senha, nome, nível e vínculo (Sem vínculo = Acesso Geral)</p>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                </button>
+            </div>
+
+            <div id="contentArea"></div>
+        </main>
+    </div>
+
+    <!-- Modal de Usuário -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"><i class="fas fa-user-plus"></i> Novo Usuário</h3>
+            <input type="hidden" id="userId">
+            <input type="text" id="userNome" placeholder="Nome completo *" autocomplete="off">
+            <input type="text" id="userLogin" placeholder="Login de acesso (opcional, será gerado se vazio)" autocomplete="off">
+            <input type="password" id="userSenha" placeholder="Senha *">
+            <select id="userNivel">
+                <option value="">Selecione o nível *</option>
+                <option value="DEV">DEV - Desenvolvedor</option>
+                <option value="SUB">SUB - Sub Tenente</option>
+                <option value="RESP">RESP - Responsável</option>
+                <option value="LEITURA">LEITURA - Leitura</option>
+            </select>
+            <select id="userPelotaoSelect">
+                <option value="">Sem vínculo (Acesso Geral)</option>
+                <option value="1º Pelotão">1º Pelotão</option>
+                <option value="2º Pelotão">2º Pelotão</option>
+                <option value="3º Pelotão">3º Pelotão</option>
+                <option value="Comando">Comando</option>
+                <option value="Apoio">Apoio</option>
+            </select>
+            <div class="info-text">* Campos obrigatórios. Na edição, deixe a senha vazia para manter a atual. Login será gerado automaticamente se não preenchido.</div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeUserModal()">Cancelar</button>
+                <button class="btn-save" id="saveUserBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h3>
+            <p>Tem certeza que deseja excluir o usuário <strong id="deleteUserName"></strong>?</p>
+            <p style="color: var(--danger); font-size: 0.8rem; margin-top: 0.5rem;">Esta ação não pode ser desfeita!</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" id="confirmDeleteBtn">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+    <script>
+        let currentUser = null;
+        let usuarios = [];
+        let userIdToDelete = null;
+
+        // Menu Hamburguer
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        // API Request para o Flask backend
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.status === 401) {
+                    window.location.href = '/';
+                    return null;
+                }
+                if (response.status === 403) {
+                    return { success: false, message: 'Acesso negado' };
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, message: 'Erro de conexão com o servidor' };
+            }
+        }
+
+        function renderizarAcessoNegado() {
+            const container = document.getElementById('contentArea');
+            container.innerHTML = `
+                <div class="access-denied">
+                    <i class="fas fa-lock"></i>
+                    <h2>Acesso Restrito</h2>
+                    <p>Apenas usuários com nível DEV ou SUB têm acesso ao gerenciamento de usuários.</p>
+                    <button class="btn-voltar" onclick="window.location.href='/dashboard'">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                    </button>
+                </div>
+            `;
+        }
+
+        async function carregarUsuarios() {
+            const data = await apiRequest('/api/usuarios');
+            if (data && data.success) {
+                usuarios = data.usuarios;
+                renderizarTabela();
+            } else if (data && !data.success && data.message === 'Acesso negado') {
+                renderizarAcessoNegado();
+            } else {
+                renderizarTabela();
+            }
+        }
+
+        function getNivelBadgeClass(nivel) {
+            switch(nivel) {
+                case 'DEV': return 'badge-dev';
+                case 'SUB': return 'badge-sub';
+                case 'RESP': return 'badge-resp';
+                default: return 'badge-leitura';
+            }
+        }
+
+        function getNivelText(nivel) {
+            switch(nivel) {
+                case 'DEV': return 'Desenvolvedor';
+                case 'SUB': return 'Sub Tenente';
+                case 'RESP': return 'Responsável';
+                case 'LEITURA': return 'Leitura';
+                default: return nivel;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        }
+
+        function renderizarTabela() {
+            const podeAcessar = currentUser && (currentUser.nivel === 'DEV' || currentUser.nivel === 'SUB');
+            if (!podeAcessar) {
+                renderizarAcessoNegado();
+                return;
+            }
+            
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            let filtered = usuarios.filter(u => 
+                u.nome.toLowerCase().includes(searchTerm) || 
+                (u.login && u.login.toLowerCase().includes(searchTerm))
+            );
+            
+            const container = document.getElementById('usersContainer');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="search-bar">
+                    <div class="search-input">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar por nome ou login..." autocomplete="off">
+                    </div>
+                    <button class="btn-add" id="btnNovoUsuario">
+                        <i class="fas fa-plus"></i> Novo Usuário
+                    </button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Login</th>
+                                <th>Nível</th>
+                                <th>Vínculo</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filtered.map(u => `
+                                <tr>
+                                    <td>${u.id}</td>
+                                    <td><strong>${escapeHtml(u.nome)}</strong></td>
+                                    <td>${escapeHtml(u.login || '')}</td>
+                                    <td><span class="badge ${getNivelBadgeClass(u.nivel)}">${getNivelText(u.nivel)}</span></td>
+                                    <td>${u.pelotao ? escapeHtml(u.pelotao) : '<span style="color: var(--text-secondary);">📌 Sem vínculo</span>'}</td>
+                                    <td><span class="badge ${u.status === 'ativo' ? 'badge-success' : 'badge-danger'}" style="background: ${u.status === 'ativo' ? '#2a7a4a' : '#c44a3a'}">${u.status || 'ativo'}</span></td>
+                                    <td class="action-icons">
+                                        <i class="fas fa-edit" onclick="editarUsuario(${u.id})" title="Editar"></i>
+                                        ${u.id !== currentUser?.id ? `<i class="fas fa-trash" onclick="confirmarExcluir(${u.id}, '${escapeHtml(u.nome)}')" title="Excluir" style="color: var(--danger);"></i>` : '<i class="fas fa-user-lock" title="Usuário atual" style="opacity:0.5;"></i>'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                ${filtered.length === 0 ? '<p style="text-align: center; padding: 2rem;">Nenhum usuário encontrado</p>' : ''}
+            `;
+            
+            document.getElementById('searchInput')?.addEventListener('input', renderizarTabela);
+            document.getElementById('btnNovoUsuario')?.addEventListener('click', openNovoUserModal);
+        }
+
+        function openNovoUserModal() {
+            if (currentUser?.nivel !== 'DEV' && currentUser?.nivel !== 'SUB') {
+                showToast('Você não tem permissão para cadastrar usuários!', true);
+                return;
+            }
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Novo Usuário';
+            document.getElementById('userId').value = '';
+            document.getElementById('userNome').value = '';
+            document.getElementById('userLogin').value = '';
+            document.getElementById('userSenha').value = '';
+            document.getElementById('userSenha').required = true;
+            document.getElementById('userNivel').value = '';
+            document.getElementById('userPelotaoSelect').value = '';
+            document.getElementById('userModal').style.display = 'flex';
+        }
+
+        async function editarUsuario(id) {
+            if (currentUser?.nivel !== 'DEV' && currentUser?.nivel !== 'SUB') {
+                showToast('Sem permissão para editar', true);
+                return;
+            }
+            const user = usuarios.find(u => u.id === id);
+            if (!user) return;
+            
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-edit"></i> Editar Usuário';
+            document.getElementById('userId').value = user.id;
+            document.getElementById('userNome').value = user.nome;
+            document.getElementById('userLogin').value = user.login || '';
+            document.getElementById('userSenha').value = '';
+            document.getElementById('userSenha').required = false;
+            document.getElementById('userNivel').value = user.nivel;
+            document.getElementById('userPelotaoSelect').value = user.pelotao || '';
+            document.getElementById('userModal').style.display = 'flex';
+        }
+
+        function closeUserModal() { document.getElementById('userModal').style.display = 'none'; }
+        
+        function confirmarExcluir(id, nome) {
+            if (currentUser?.nivel !== 'DEV') { 
+                showToast('Apenas desenvolvedores podem excluir usuários!', true); 
+                return; 
+            }
+            userIdToDelete = id;
+            document.getElementById('deleteUserName').innerText = nome;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+        
+        function closeDeleteModal() { 
+            document.getElementById('deleteModal').style.display = 'none'; 
+            userIdToDelete = null; 
+        }
+        
+        async function excluirUsuario() {
+            if (!userIdToDelete) return;
+            
+            const result = await apiRequest(`/api/usuarios/${userIdToDelete}`, { method: 'DELETE' });
+            
+            if (result && result.success) {
+                showToast(result.message || 'Usuário excluído/desativado com sucesso!');
+                closeDeleteModal();
+                carregarUsuarios();
+            } else {
+                showToast(result?.message || 'Erro ao excluir usuário', true);
+            }
+        }
+
+        async function salvarUsuario() {
+            const id = document.getElementById('userId').value;
+            const nome = document.getElementById('userNome').value.trim();
+            let login = document.getElementById('userLogin').value.trim();
+            const senha = document.getElementById('userSenha').value;
+            const nivel = document.getElementById('userNivel').value;
+            const pelotao = document.getElementById('userPelotaoSelect').value;
+            
+            if (!nome || !nivel) {
+                showToast('Preencha nome e nível de acesso!', true);
+                return;
+            }
+            
+            // Se login não foi informado, gerar a partir do nome
+            if (!login) {
+                login = nome.toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-z0-9]/g, '_');
+            }
+            
+            if (!id && !senha) {
+                showToast('Informe uma senha para o novo usuário!', true);
+                return;
+            }
+            
+            const data = { nome, login, nivel, pelotao: pelotao || null };
+            if (senha) data.senha = senha;
+            
+            let result;
+            if (id) {
+                result = await apiRequest(`/api/usuarios/${id}`, { 
+                    method: 'PUT', 
+                    body: JSON.stringify(data) 
+                });
+            } else {
+                result = await apiRequest('/api/usuarios', { 
+                    method: 'POST', 
+                    body: JSON.stringify(data) 
+                });
+            }
+            
+            if (result && result.success) {
+                showToast(id ? 'Usuário atualizado com sucesso!' : 'Usuário cadastrado com sucesso!');
+                closeUserModal();
+                carregarUsuarios();
+            } else {
+                showToast(result?.message || 'Erro ao salvar usuário', true);
+            }
+        }
+
+        async function loadUser() {
+            try {
+                const response = await fetch('/api/usuario_atual', { 
+                    credentials: 'same-origin' 
+                });
+                if (!response.ok) { 
+                    window.location.href = '/'; 
+                    return null; 
+                }
+                currentUser = await response.json();
+                document.getElementById('userName').innerText = currentUser.nome;
+                let roleText = '';
+                if (currentUser.nivel === 'DEV') roleText = '<i class="fas fa-code"></i> Desenvolvedor';
+                else if (currentUser.nivel === 'SUB') roleText = '<i class="fas fa-star-of-life"></i> Sub Tenente';
+                else if (currentUser.nivel === 'RESP') roleText = '<i class="fas fa-users"></i> Responsável';
+                else roleText = '<i class="fas fa-eye"></i> Leitura';
+                document.getElementById('userRole').innerHTML = roleText;
+                document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Sem vínculo';
+                
+                const podeAcessar = currentUser.nivel === 'DEV' || currentUser.nivel === 'SUB';
+                if (!podeAcessar) {
+                    renderizarAcessoNegado();
+                } else {
+                    await carregarUsuarios();
+                }
+                return currentUser;
+            } catch (error) {
+                window.location.href = '/';
+                return null;
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+            window.location.href = '/';
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('encmat_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i> <span>Modo Claro</span>';
+            }
+        }
+        
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('encmat_theme', isDark ? 'dark' : 'light');
+            const btn = document.getElementById('themeToggle');
+            btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
+        });
+        
+        document.getElementById('saveUserBtn')?.addEventListener('click', salvarUsuario);
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', excluirUsuario);
+        
+        window.editarUsuario = editarUsuario;
+        window.closeUserModal = closeUserModal;
+        window.confirmarExcluir = confirmarExcluir;
+        window.closeDeleteModal = closeDeleteModal;
+        
+        // Criar container inicial
+        const container = document.getElementById('contentArea');
+        container.innerHTML = '<div id="usersContainer" class="users-container"></div>';
+        
+        async function init() {
+            initTheme();
+            await loadUser();
+        }
+        
+        init();
+    </script>
+</body>
+</html>

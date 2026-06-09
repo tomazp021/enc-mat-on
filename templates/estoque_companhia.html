@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ENC-MAT · Estoque da Companhia</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #e8f0e8;
+            --bg-card: #ffffff;
+            --bg-sidebar: #f5faf5;
+            --text-primary: #1a2c1a;
+            --text-secondary: #4a6a4a;
+            --accent: #2d6a4f;
+            --accent-hover: #1b4d3e;
+            --accent-light: #d4e8d4;
+            --border: #c0d4c0;
+            --danger: #c44a3a;
+            --success: #2a7a4a;
+            --warning: #d48a2a;
+            --info: #2a6a8a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --input-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-primary: #0a1a0f;
+            --bg-card: #1a2a1f;
+            --bg-sidebar: #0f1f14;
+            --text-primary: #e8f0e8;
+            --text-secondary: #a0c0a0;
+            --accent: #c9a53b;
+            --accent-hover: #dbb84e;
+            --accent-light: #2a3a2a;
+            --border: #3a5a3a;
+            --danger: #d96c5c;
+            --success: #5a9a6a;
+            --warning: #d4a43a;
+            --info: #4a8aaa;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-hover: 0 12px 32px rgba(0,0,0,0.5);
+            --input-bg: #2a3a2a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--accent);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding-top: 70px;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.show {
+                display: block;
+            }
+        }
+
+        .logo-area {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .logo-area .logo-icon {
+            background: var(--accent-light);
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-area .logo-icon i {
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        .logo-area h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .logo-area p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info-sidebar {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .user-info-sidebar h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            word-break: break-word;
+        }
+        .user-info-sidebar .user-role {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .user-info-sidebar .user-pelotao {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-menu li {
+            margin-bottom: 0.3rem;
+        }
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .nav-menu a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .nav-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-menu a i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .logout-btn-sidebar {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .logout-btn-sidebar button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .logout-btn-sidebar button:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .theme-toggle {
+            background: var(--accent-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .search-bar {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        .search-input {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+        }
+        .search-input i {
+            color: var(--text-secondary);
+        }
+        .search-input input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        .btn-add {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+
+        .section-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .section-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+        td {
+            font-size: 0.85rem;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-normal { background: var(--success); color: white; }
+        .badge-critico { background: var(--danger); color: white; }
+        .badge-alerta { background: var(--warning); color: white; }
+        .badge-ativo { background: var(--success); color: white; }
+        .badge-inativo { background: var(--danger); color: white; }
+        .badge-manutencao { background: var(--warning); color: white; }
+        .action-icons i {
+            margin: 0 0.3rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+            font-size: 1rem;
+        }
+        .action-icons i:hover {
+            color: var(--accent);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        .modal-buttons button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-save {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            border: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .access-denied {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: 20px;
+            margin: 2rem;
+        }
+        .access-denied i {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        .access-denied h2 {
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        .access-denied p {
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-top: 70px;
+            }
+            .search-bar {
+                flex-direction: column;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .filter-select {
+                width: 100%;
+            }
+            .btn-add {
+                width: 100%;
+                justify-content: center;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .page-title h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-card {
+                padding: 1rem;
+            }
+            .section-header h2 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+                <h2>ENC·MAT</h2>
+                <p>Controle de Estoque</p>
+            </div>
+            <div class="user-info-sidebar" id="sidebarUserInfo">
+                <i class="fas fa-user-shield"></i>
+                <h4 id="userName">Carregando...</h4>
+                <div class="user-role" id="userRole"></div>
+                <div class="user-pelotao" id="userPelotao"></div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/estoque_companhia" class="active"><i class="fas fa-cubes"></i> <span>Estoque Companhia</span></a></li>
+                <li><a href="/reserva_pelotao"><i class="fas fa-users"></i> <span>Reserva Pelotão</span></a></li>
+                <li><a href="/cautela"><i class="fas fa-exchange-alt"></i> <span>Cautela</span></a></li>
+                <li><a href="/historico"><i class="fas fa-history"></i> <span>Histórico</span></a></li>
+                <li><a href="/relatorios"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+                <li><a href="/usuarios"><i class="fas fa-users-cog"></i> <span>Usuários</span></a></li>
+                <li><a href="/configuracoes"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
+            </ul>
+            <div class="logout-btn-sidebar">
+                <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content" id="mainContent">
+            <!-- Conteúdo será carregado dinamicamente após verificação de permissão -->
+        </main>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-trash-alt"></i> Confirmar Exclusão</h3>
+            <p>Tem certeza que deseja excluir o material <strong id="deleteMaterialNome"></strong>?</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">Esta ação não poderá ser desfeita e também removerá o material do estoque dos pelotões.</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" id="confirmDeleteBtn">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Novo/Editar Material -->
+    <div id="materialModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"><i class="fas fa-plus-circle"></i> Cadastrar Novo Material</h3>
+            <input type="hidden" id="materialId">
+            <input type="text" id="codigo" placeholder="Código do material *" required>
+            <input type="text" id="material" placeholder="Nome do material *" required>
+            <select id="categoria" required>
+                <option value="">Selecione a categoria</option>
+            </select>
+            <input type="number" id="quantidade_total" placeholder="Quantidade total" value="0">
+            <input type="text" id="localizacao" placeholder="Localização">
+            <textarea id="observacao" rows="3" placeholder="Observação"></textarea>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="btn-save" id="saveMaterialBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Status -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-exchange-alt"></i> Alterar Status do Material</h3>
+            <input type="hidden" id="statusMaterialId">
+            <p><strong id="statusMaterialNome"></strong></p>
+            <select id="novoStatus">
+                <option value="ATIVO">ATIVO</option>
+                <option value="INATIVO">INATIVO</option>
+                <option value="MANUTENCAO">EM MANUTENÇÃO</option>
+            </select>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeStatusModal()">Cancelar</button>
+                <button class="btn-save" id="confirmStatusBtn">Alterar Status</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+    <script>
+        let currentUser = null;
+        let materiais = [];
+        let categorias = [];
+        let deleteMaterialId = null;
+
+        // Menu Hamburguer
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', toggleMenu);
+        }
+        if (overlay) {
+            overlay.addEventListener('click', toggleMenu);
+        }
+
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    credentials: 'same-origin'
+                });
+                if (response.status === 401) { window.location.href = '/'; return null; }
+                return await response.json();
+            } catch (error) { console.error(error); return null; }
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function showAccessDenied() {
+            const mainContent = document.getElementById('mainContent');
+            mainContent.innerHTML = `
+                <div class="access-denied">
+                    <i class="fas fa-lock"></i>
+                    <h2>Acesso Negado</h2>
+                    <p>Você não tem permissão para acessar o Estoque da Companhia.</p>
+                    <p style="margin-top: 1rem;">Apenas usuários com nível <strong>DEV</strong> ou <strong>SUB</strong> têm acesso a esta página.</p>
+                    <button class="theme-toggle" style="margin-top: 2rem;" onclick="window.location.href='/dashboard'">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                    </button>
+                </div>
+            `;
+        }
+
+        async function carregarCategorias() {
+            const data = await apiRequest('/api/categorias');
+            if (data && data.success) {
+                categorias = data.categorias;
+                const selectCategoria = document.getElementById('categoria');
+                const filterSelect = document.getElementById('categoriaFilter');
+                
+                if (selectCategoria) {
+                    selectCategoria.innerHTML = '<option value="">Selecione a categoria</option>';
+                    categorias.forEach(c => {
+                        selectCategoria.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+                    });
+                }
+                
+                if (filterSelect) {
+                    filterSelect.innerHTML = '<option value="">Todas categorias</option>';
+                    categorias.forEach(c => {
+                        filterSelect.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+                    });
+                }
+            }
+        }
+
+        async function carregarEstoque() {
+            const data = await apiRequest('/api/estoque_companhia');
+            if (data && data.success) {
+                materiais = data.materiais;
+                renderizarTabela();
+            }
+        }
+
+        function getStatusEstoque(disponivel, total) {
+            if (total === 0) return { status: 'critico', text: 'ESGOTADO' };
+            const percentual = (disponivel / total) * 100;
+            if (percentual <= 30) return { status: 'critico', text: 'BAIXO' };
+            if (percentual <= 60) return { status: 'alerta', text: 'ALERTA' };
+            return { status: 'normal', text: 'NORMAL' };
+        }
+
+        function getStatusItemClass(status) {
+            switch(status) {
+                case 'ATIVO': return 'badge-ativo';
+                case 'INATIVO': return 'badge-inativo';
+                case 'MANUTENCAO': return 'badge-manutencao';
+                default: return 'badge-normal';
+            }
+        }
+
+        function getStatusItemText(status) {
+            switch(status) {
+                case 'ATIVO': return 'ATIVO';
+                case 'INATIVO': return 'INATIVO';
+                case 'MANUTENCAO': return 'MANUTENÇÃO';
+                default: return status || 'ATIVO';
+            }
+        }
+
+        function renderizarTabela() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const categoriaFilter = document.getElementById('categoriaFilter')?.value || '';
+            
+            let filtered = materiais.filter(m => {
+                const matchSearch = m.codigo.toLowerCase().includes(searchTerm) || m.material.toLowerCase().includes(searchTerm);
+                const matchCategoria = !categoriaFilter || m.categoria === categoriaFilter;
+                return matchSearch && matchCategoria;
+            });
+            
+            const tbody = document.getElementById('estoqueList');
+            if (!tbody) return;
+            
+            const podeEditar = currentUser && (currentUser.nivel === 'DEV' || currentUser.nivel === 'SUB');
+            
+            tbody.innerHTML = filtered.map(m => {
+                const statusInfo = getStatusEstoque(m.quantidade_disponivel, m.quantidade_total);
+                const statusClass = statusInfo.status === 'critico' ? 'badge-critico' : (statusInfo.status === 'alerta' ? 'badge-alerta' : 'badge-normal');
+                const itemStatusClass = getStatusItemClass(m.status || 'ATIVO');
+                return `
+                    <tr>
+                        <td><strong>${m.codigo}</strong></td>
+                        <td>${m.material}</td>
+                        <td>${m.categoria}</td>
+                        <td>${m.quantidade_total}</td>
+                        <td>${m.quantidade_disponivel}</td>
+                        <td><span class="badge-status ${statusClass}">${statusInfo.text}</span></td>
+                        <td><span class="badge-status ${itemStatusClass}">${getStatusItemText(m.status || 'ATIVO')}</span></td>
+                        <td>${m.localizacao || '-'}</td>
+                        ${podeEditar ? `<td class="action-icons">
+                            <i class="fas fa-edit" onclick="openEditModal(${m.id})" title="Editar"></i>
+                            <i class="fas fa-exchange-alt" onclick="openStatusModal(${m.id}, '${m.material.replace(/'/g, "\\'")}', '${m.status || 'ATIVO'}')" title="Alterar Status"></i>
+                            <i class="fas fa-trash" onclick="openDeleteModal(${m.id}, '${m.material.replace(/'/g, "\\'")}')" title="Excluir" style="color: var(--danger);"></i>
+                         </span>` : '<td>-</td>'}
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function carregarPaginaCompleta() {
+            const mainContent = document.getElementById('mainContent');
+            mainContent.innerHTML = `
+                <div class="top-bar">
+                    <div class="page-title">
+                        <h1><i class="fas fa-cubes"></i> Estoque da Companhia</h1>
+                        <p>Gerenciamento do almoxarifado central</p>
+                    </div>
+                    <button class="theme-toggle" id="themeTogglePage">
+                        <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                    </button>
+                </div>
+
+                <div class="search-bar">
+                    <div class="search-input">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar por código ou material...">
+                    </div>
+                    <select id="categoriaFilter" class="filter-select">
+                        <option value="">Todas categorias</option>
+                    </select>
+                    ${(currentUser && (currentUser.nivel === 'DEV' || currentUser.nivel === 'SUB')) ? 
+                        '<button class="btn-add" id="btnNovoMaterial"><i class="fas fa-plus"></i> Novo Material</button>' : 
+                        ''}
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-clipboard-list"></i> Materiais em Estoque</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table id="estoqueTable">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Material</th>
+                                    <th>Categoria</th>
+                                    <th>Total</th>
+                                    <th>Disponível</th>
+                                    <th>Status Estoque</th>
+                                    <th>Status Item</th>
+                                    <th>Localização</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="estoqueList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            // Re-conectar eventos após carregar o HTML
+            document.getElementById('searchInput')?.addEventListener('input', renderizarTabela);
+            document.getElementById('categoriaFilter')?.addEventListener('change', renderizarTabela);
+            
+            const btnNovo = document.getElementById('btnNovoMaterial');
+            if (btnNovo) btnNovo.addEventListener('click', openNovoModal);
+            
+            const themeTogglePage = document.getElementById('themeTogglePage');
+            if (themeTogglePage) {
+                themeTogglePage.addEventListener('click', toggleTheme);
+            }
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('encmat_theme', isDark ? 'dark' : 'light');
+            const btn = document.getElementById('themeTogglePage');
+            if (btn) btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
+        }
+
+        function openEditModal(id) {
+            const material = materiais.find(m => m.id === id);
+            if (!material) return;
+            
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Material';
+            document.getElementById('materialId').value = material.id;
+            document.getElementById('codigo').value = material.codigo;
+            document.getElementById('material').value = material.material;
+            document.getElementById('categoria').value = material.categoria;
+            document.getElementById('quantidade_total').value = material.quantidade_total;
+            document.getElementById('localizacao').value = material.localizacao || '';
+            document.getElementById('observacao').value = material.observacao || '';
+            document.getElementById('materialModal').style.display = 'flex';
+        }
+
+        function openNovoModal() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Cadastrar Novo Material';
+            document.getElementById('materialId').value = '';
+            document.getElementById('codigo').value = '';
+            document.getElementById('material').value = '';
+            document.getElementById('categoria').value = '';
+            document.getElementById('quantidade_total').value = '';
+            document.getElementById('localizacao').value = '';
+            document.getElementById('observacao').value = '';
+            document.getElementById('materialModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('materialModal').style.display = 'none';
+        }
+
+        function openDeleteModal(id, nome) {
+            deleteMaterialId = id;
+            document.getElementById('deleteMaterialNome').innerText = nome;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            deleteMaterialId = null;
+        }
+
+        async function confirmDelete() {
+            if (deleteMaterialId) {
+                const result = await apiRequest(`/api/estoque_companhia/${deleteMaterialId}`, { 
+                    method: 'DELETE'
+                });
+                
+                if (result && result.success) {
+                    showToast('Material excluído com sucesso!');
+                    closeDeleteModal();
+                    carregarEstoque();
+                } else {
+                    showToast(result?.message || 'Erro ao excluir material', true);
+                }
+            }
+        }
+
+        function openStatusModal(id, nome, statusAtual) {
+            document.getElementById('statusMaterialId').value = id;
+            document.getElementById('statusMaterialNome').innerText = nome;
+            const select = document.getElementById('novoStatus');
+            if (statusAtual === 'ATIVO') select.value = 'ATIVO';
+            else if (statusAtual === 'INATIVO') select.value = 'INATIVO';
+            else select.value = 'MANUTENCAO';
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').style.display = 'none';
+        }
+
+        async function alterarStatus() {
+            const id = document.getElementById('statusMaterialId').value;
+            const novoStatus = document.getElementById('novoStatus').value;
+            
+            const result = await apiRequest(`/api/estoque_companhia/${id}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: novoStatus })
+            });
+            
+            if (result && result.success) {
+                showToast(`Status alterado para ${novoStatus}!`);
+                closeStatusModal();
+                carregarEstoque();
+            } else {
+                showToast(result?.message || 'Erro ao alterar status', true);
+            }
+        }
+
+        async function salvarMaterial() {
+            const id = document.getElementById('materialId').value;
+            const codigo = document.getElementById('codigo').value.trim();
+            const material = document.getElementById('material').value.trim();
+            const categoria = document.getElementById('categoria').value;
+            const quantidade_total = parseInt(document.getElementById('quantidade_total').value) || 0;
+            const localizacao = document.getElementById('localizacao').value;
+            const observacao = document.getElementById('observacao').value;
+            
+            if (!codigo || !material || !categoria) {
+                showToast('Preencha todos os campos obrigatórios!', true);
+                return;
+            }
+            
+            const codigoExiste = materiais.some(m => m.codigo === codigo && m.id != id);
+            if (codigoExiste) {
+                showToast('Código já existe! Use um código diferente.', true);
+                return;
+            }
+            
+            const data = { 
+                codigo, 
+                material, 
+                categoria, 
+                quantidade_total, 
+                quantidade_disponivel: quantidade_total,
+                localizacao, 
+                observacao 
+            };
+            
+            let result;
+            if (id) {
+                result = await apiRequest(`/api/estoque_companhia/${id}`, { 
+                    method: 'PUT', 
+                    body: JSON.stringify(data) 
+                });
+            } else {
+                result = await apiRequest('/api/estoque_companhia', { 
+                    method: 'POST', 
+                    body: JSON.stringify({ ...data, status: 'ATIVO' }) 
+                });
+            }
+            
+            if (result && result.success) {
+                showToast(id ? 'Material atualizado!' : 'Material cadastrado!');
+                closeModal();
+                carregarEstoque();
+            } else {
+                showToast(result?.message || 'Erro ao salvar', true);
+            }
+        }
+
+        async function loadUser() {
+            try {
+                const response = await fetch('/api/usuario_atual', { credentials: 'same-origin' });
+                if (!response.ok) { window.location.href = '/'; return null; }
+                currentUser = await response.json();
+                document.getElementById('userName').innerText = currentUser.nome;
+                let roleText = '';
+                if (currentUser.nivel === 'DEV') roleText = '<i class="fas fa-code"></i> Desenvolvedor';
+                else if (currentUser.nivel === 'SUB') roleText = '<i class="fas fa-star-of-life"></i> Sub Tenente';
+                else if (currentUser.nivel === 'RESP') roleText = '<i class="fas fa-users"></i> Responsável';
+                else roleText = '<i class="fas fa-eye"></i> Leitura';
+                document.getElementById('userRole').innerHTML = roleText;
+                document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
+                
+                // Verificar permissão de acesso (apenas DEV ou SUB)
+                if (currentUser.nivel !== 'DEV' && currentUser.nivel !== 'SUB') {
+                    showAccessDenied();
+                    return null;
+                }
+                
+                return currentUser;
+            } catch (error) {
+                window.location.href = '/';
+                return null;
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+            window.location.href = '/';
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('encmat_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+            }
+        }
+        
+        // Eventos globais
+        document.getElementById('saveMaterialBtn')?.addEventListener('click', salvarMaterial);
+        document.getElementById('confirmStatusBtn')?.addEventListener('click', alterarStatus);
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+        
+        window.openEditModal = openEditModal;
+        window.closeModal = closeModal;
+        window.openStatusModal = openStatusModal;
+        window.closeStatusModal = closeStatusModal;
+        window.openDeleteModal = openDeleteModal;
+        window.closeDeleteModal = closeDeleteModal;
+        
+        async function init() {
+            initTheme();
+            const user = await loadUser();
+            if (user && (user.nivel === 'DEV' || user.nivel === 'SUB')) {
+                carregarPaginaCompleta();
+                await carregarCategorias();
+                await carregarEstoque();
+            }
+        }
+        
+        init();
+    </script>
+</body>
+</html>

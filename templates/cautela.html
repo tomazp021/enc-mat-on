@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ENC-MAT · Cautela e Descautela</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #e8f0e8;
+            --bg-card: #ffffff;
+            --bg-sidebar: #f5faf5;
+            --text-primary: #1a2c1a;
+            --text-secondary: #4a6a4a;
+            --accent: #2d6a4f;
+            --accent-hover: #1b4d3e;
+            --accent-light: #d4e8d4;
+            --border: #c0d4c0;
+            --danger: #c44a3a;
+            --danger-hover: #a0382a;
+            --success: #2a7a4a;
+            --success-hover: #1a5a3a;
+            --warning: #d48a2a;
+            --info: #2a6a8a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --input-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-primary: #0a1a0f;
+            --bg-card: #1a2a1f;
+            --bg-sidebar: #0f1f14;
+            --text-primary: #e8f0e8;
+            --text-secondary: #a0c0a0;
+            --accent: #c9a53b;
+            --accent-hover: #dbb84e;
+            --accent-light: #2a3a2a;
+            --border: #3a5a3a;
+            --danger: #d96c5c;
+            --danger-hover: #b84a3a;
+            --success: #5a9a6a;
+            --success-hover: #3a7a4a;
+            --warning: #d4a43a;
+            --info: #4a8aaa;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-hover: 0 12px 32px rgba(0,0,0,0.5);
+            --input-bg: #2a3a2a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--accent);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding-top: 70px;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.show {
+                display: block;
+            }
+        }
+
+        .logo-area {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .logo-area .logo-icon {
+            background: var(--accent-light);
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-area .logo-icon i {
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        .logo-area h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .logo-area p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info-sidebar {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .user-info-sidebar h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            word-break: break-word;
+        }
+        .user-info-sidebar .user-role {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .user-info-sidebar .user-pelotao {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-menu li {
+            margin-bottom: 0.3rem;
+        }
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .nav-menu a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .nav-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-menu a i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .logout-btn-sidebar {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .logout-btn-sidebar button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .logout-btn-sidebar button:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .theme-toggle {
+            background: var(--accent-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .form-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .form-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tipo-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .tipo-btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tipo-btn-cautela {
+            background: var(--danger);
+            color: white;
+        }
+        .tipo-btn-cautela:hover {
+            background: var(--danger-hover);
+            transform: scale(0.98);
+        }
+        .tipo-btn-cautela.active {
+            background: var(--danger-hover);
+            box-shadow: 0 0 0 2px var(--danger), 0 0 0 4px var(--bg-card);
+        }
+        .tipo-btn-descautela {
+            background: var(--success);
+            color: white;
+        }
+        .tipo-btn-descautela:hover {
+            background: var(--success-hover);
+            transform: scale(0.98);
+        }
+        .tipo-btn-descautela.active {
+            background: var(--success-hover);
+            box-shadow: 0 0 0 2px var(--success), 0 0 0 4px var(--bg-card);
+        }
+        
+        .material-search-container {
+            position: relative;
+            width: 100%;
+        }
+        .material-search-input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .material-search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .material-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: var(--shadow);
+        }
+        .material-dropdown.show {
+            display: block;
+        }
+        .material-option {
+            padding: 0.8rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .material-option:hover {
+            background: var(--accent-light);
+        }
+        .material-option .material-codigo {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .material-option .material-nome {
+            font-weight: 600;
+        }
+        .material-option .material-qtd {
+            font-size: 0.7rem;
+            color: var(--accent);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+        .form-group label .required {
+            color: var(--danger);
+            margin-left: 2px;
+        }
+        select, input {
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .btn-submit {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .btn-submit:hover {
+            background: var(--accent-hover);
+        }
+
+        .info-card {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid var(--accent);
+        }
+        .info-card i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+        .info-card p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .section-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+        td {
+            font-size: 0.85rem;
+        }
+        .badge-cautela {
+            background: var(--danger);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-descautela {
+            background: var(--success);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-top: 70px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .page-title h1 {
+                font-size: 1.2rem;
+            }
+            .tipo-buttons {
+                width: 100%;
+            }
+            .tipo-btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-card {
+                padding: 1rem;
+            }
+            .section-card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+                <h2>ENC·MAT</h2>
+                <p>Controle de Estoque</p>
+            </div>
+            <div class="user-info-sidebar" id="sidebarUserInfo">
+                <i class="fas fa-user-shield"></i>
+                <h4 id="userName">Carregando...</h4>
+                <div class="user-role" id="userRole"></div>
+                <div class="user-pelotao" id="userPelotao"></div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/estoque_companhia"><i class="fas fa-cubes"></i> <span>Estoque Companhia</span></a></li>
+                <li><a href="/reserva_pelotao"><i class="fas fa-users"></i> <span>Reserva Pelotão</span></a></li>
+                <li><a href="/cautela" class="active"><i class="fas fa-exchange-alt"></i> <span>Cautela</span></a></li>
+                <li><a href="/historico"><i class="fas fa-history"></i> <span>Histórico</span></a></li>
+                <li><a href="/relatorios"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+                <li><a href="/usuarios"><i class="fas fa-users-cog"></i> <span>Usuários</span></a></li>
+                <li><a href="/configuracoes"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
+            </ul>
+            <div class="logout-btn-sidebar">
+                <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-exchange-alt"></i> Cautela e Descautela</h1>
+                    <p>Registro de retirada e devolução de material</p>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                </button>
+            </div>
+
+            <div class="form-card">
+                <div class="form-header">
+                    <h2><i class="fas fa-clipboard-list"></i> Nova Movimentação</h2>
+                    <div class="tipo-buttons">
+                        <button class="tipo-btn tipo-btn-cautela active" data-tipo="CAUTELA" id="btnCautela">CAUTELA</button>
+                        <button class="tipo-btn tipo-btn-descautela" data-tipo="DESCAUTELA" id="btnDescautela">DESCAUTELA</button>
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nome do Militar <span class="required">*</span></label>
+                        <input type="text" id="nomeMilitar" placeholder="Nome completo do militar" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user-tie"></i> Responsável <span class="required">*</span></label>
+                        <input type="text" id="responsavel" placeholder="Nome do responsável pela cautela" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-box"></i> Material <span class="required">*</span></label>
+                        <div class="material-search-container">
+                            <input type="text" id="materialSearch" class="material-search-input" placeholder="Digite para buscar material...">
+                            <input type="hidden" id="materialId">
+                            <div id="materialDropdown" class="material-dropdown"></div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="pelotaoGroup">
+                        <label><i class="fas fa-users"></i> Pelotão <span class="required">*</span></label>
+                        <select id="pelotaoSelect">
+                            <option value="1º Pelotão">1º Pelotão</option>
+                            <option value="2º Pelotão">2º Pelotão</option>
+                            <option value="3º Pelotão">3º Pelotão</option>
+                            <option value="Material SUB">Material SUB</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-sort-numeric-up"></i> Quantidade <span class="required">*</span></label>
+                        <input type="number" id="quantidade" placeholder="Quantidade" value="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-comment"></i> Observação</label>
+                        <input type="text" id="observacao" placeholder="Observação (opcional)">
+                    </div>
+                </div>
+                
+                <button class="btn-submit" id="btnRegistrar">
+                    <i class="fas fa-save"></i> Registrar Movimentação
+                </button>
+                
+                <div class="info-card" id="infoDisponivel">
+                    <i class="fas fa-info-circle"></i>
+                    <p id="infoText">Busque e selecione um material para ver a quantidade disponível</p>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i> Últimas Movimentações</h2>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="movTable">
+                        <thead>
+                            <tr><th>Data/Hora</th><th>Militar</th><th>Responsável</th><th>Material</th><th>Tipo</th><th>Quantidade</th><th>Pelotão</th><th>Observação</th></tr>
+                        </thead>
+                        <tbody id="movList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+    <script>
+        let currentUser = null;
+        let materiais = [];
+        let estoquePelotao = [];
+        let movimentacoes = [];
+        let tipoAtual = 'CAUTELA';
+        let materialSelecionado = null;
+
+        // Menu Hamburguer
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', toggleMenu);
+        }
+        if (overlay) {
+            overlay.addEventListener('click', toggleMenu);
+        }
+
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    credentials: 'same-origin'
+                });
+                if (response.status === 401) { window.location.href = '/'; return null; }
+                return await response.json();
+            } catch (error) { console.error(error); return null; }
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        async function carregarEstoquePelotao() {
+            const data = await apiRequest('/api/estoque_pelotao');
+            if (data && data.success) {
+                estoquePelotao = data.estoque;
+            }
+        }
+
+        async function carregarMateriais() {
+            const nivel = currentUser?.nivel;
+            
+            if (nivel === 'DEV' || nivel === 'SUB') {
+                // ADMIN e SUB veem o estoque da companhia
+                const data = await apiRequest('/api/estoque_companhia');
+                if (data && data.success) {
+                    materiais = data.materiais;
+                }
+            } else if (nivel === 'RESP' && currentUser?.pelotao) {
+                // RESPONSÁVEL vê apenas os materiais do seu pelotão
+                await carregarEstoquePelotao();
+                // Filtrar materiais que existem no pelotão
+                const materiaisPelotao = estoquePelotao.filter(e => e.pelotao === currentUser.pelotao && e.quantidade > 0);
+                materiais = materiaisPelotao.map(ep => {
+                    return {
+                        id: ep.material_id,
+                        codigo: ep.codigo,
+                        material: ep.material_nome,
+                        categoria: ep.categoria,
+                        quantidade_disponivel: ep.quantidade,
+                        status: 'ATIVO'
+                    };
+                });
+            } else {
+                materiais = [];
+            }
+            
+            renderizarDropdown();
+        }
+
+        function renderizarDropdown() {
+            const searchTerm = document.getElementById('materialSearch').value.toLowerCase();
+            const dropdown = document.getElementById('materialDropdown');
+            
+            let filtered = materiais;
+            
+            if (tipoAtual === 'CAUTELA') {
+                filtered = materiais.filter(m => m.quantidade_disponivel > 0 && m.status !== 'INATIVO');
+            } else {
+                filtered = materiais.filter(m => m.status !== 'INATIVO');
+            }
+            
+            if (searchTerm) {
+                filtered = filtered.filter(m => 
+                    m.material.toLowerCase().includes(searchTerm) || 
+                    m.codigo.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="material-option" style="text-align: center;">Nenhum material encontrado</div>';
+                dropdown.classList.add('show');
+                return;
+            }
+            
+            dropdown.innerHTML = filtered.map(m => `
+                <div class="material-option" onclick="selecionarMaterial(${m.id}, '${m.material.replace(/'/g, "\\'")}', '${m.codigo}', ${m.quantidade_disponivel || 0})">
+                    <div class="material-nome">${m.material}</div>
+                    <div class="material-codigo">${m.codigo}</div>
+                    <div class="material-qtd">${tipoAtual === 'CAUTELA' ? `${m.quantidade_disponivel || 0} disponiveis` : ''}</div>
+                </div>
+            `).join('');
+            dropdown.classList.add('show');
+        }
+
+        function selecionarMaterial(id, nome, codigo, disponivel) {
+            materialSelecionado = { id, nome, codigo, disponivel };
+            document.getElementById('materialSearch').value = `${codigo} - ${nome}`;
+            document.getElementById('materialId').value = id;
+            document.getElementById('materialDropdown').classList.remove('show');
+            atualizarInfoMaterial();
+        }
+
+        function fecharDropdown(e) {
+            const container = document.querySelector('.material-search-container');
+            if (container && !container.contains(e.target)) {
+                document.getElementById('materialDropdown').classList.remove('show');
+            }
+        }
+
+        document.getElementById('materialSearch')?.addEventListener('input', renderizarDropdown);
+        document.getElementById('materialSearch')?.addEventListener('focus', renderizarDropdown);
+        document.addEventListener('click', fecharDropdown);
+
+        async function carregarMovimentacoes() {
+            const data = await apiRequest('/api/movimentacoes');
+            if (data && data.success) {
+                movimentacoes = data.movimentacoes;
+                renderizarMovimentacoes();
+            }
+        }
+
+        function renderizarMovimentacoes() {
+            const tbody = document.getElementById('movList');
+            const isResp = currentUser?.nivel === 'RESP';
+            
+            let filtradas = movimentacoes;
+            if (isResp && currentUser?.pelotao) {
+                filtradas = filtradas.filter(m => m.pelotao === currentUser.pelotao);
+            }
+            
+            tbody.innerHTML = filtradas.slice(0, 20).map(m => `
+                <tr>
+                    <td>${m.data} ${m.hora || ''}</td>
+                    <td>${m.nome_militar || '-'}</td>
+                    <td>${m.responsavel || '-'}</td>
+                    <td>${m.material_nome}</td>
+                    <td><span class="${m.tipo === 'CAUTELA' ? 'badge-cautela' : 'badge-descautela'}">${m.tipo === 'CAUTELA' ? 'CAUTELA' : 'DESCAUTELA'}</span></td>
+                    <td>${m.quantidade}</td>
+                    <td>${m.pelotao}</td>
+                    <td>${m.observacao || '-'}</td>
+                </tr>
+            `).join('');
+            
+            if (filtradas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nenhuma movimentação registrada</span></tr>';
+            }
+        }
+
+        function atualizarInfoMaterial() {
+            const infoText = document.getElementById('infoText');
+            
+            if (!materialSelecionado) {
+                infoText.innerHTML = 'Busque e selecione um material para ver a quantidade disponível';
+                return;
+            }
+            
+            if (tipoAtual === 'CAUTELA') {
+                infoText.innerHTML = `<strong>${materialSelecionado.codigo} - ${materialSelecionado.nome}</strong> - Quantidade disponível: <strong>${materialSelecionado.disponivel} unidades</strong>`;
+            } else {
+                const pelotao = document.getElementById('pelotaoSelect').value;
+                infoText.innerHTML = `<strong>${materialSelecionado.codigo} - ${materialSelecionado.nome}</strong><br>Informe a quantidade a ser devolvida ao ${pelotao}.`;
+            }
+        }
+
+        document.getElementById('pelotaoSelect')?.addEventListener('change', () => {
+            if (tipoAtual === 'DESCAUTELA') atualizarInfoMaterial();
+        });
+        
+        document.getElementById('btnCautela')?.addEventListener('click', async () => {
+            tipoAtual = 'CAUTELA';
+            document.getElementById('btnCautela').classList.add('active');
+            document.getElementById('btnDescautela').classList.remove('active');
+            materialSelecionado = null;
+            document.getElementById('materialSearch').value = '';
+            document.getElementById('materialId').value = '';
+            await carregarMateriais();
+            atualizarInfoMaterial();
+        });
+        
+        document.getElementById('btnDescautela')?.addEventListener('click', async () => {
+            tipoAtual = 'DESCAUTELA';
+            document.getElementById('btnDescautela').classList.add('active');
+            document.getElementById('btnCautela').classList.remove('active');
+            materialSelecionado = null;
+            document.getElementById('materialSearch').value = '';
+            document.getElementById('materialId').value = '';
+            await carregarMateriais();
+            atualizarInfoMaterial();
+        });
+
+        async function registrarMovimentacao() {
+            const nomeMilitar = document.getElementById('nomeMilitar').value.trim();
+            const responsavel = document.getElementById('responsavel').value.trim();
+            const materialId = document.getElementById('materialId').value;
+            const quantidade = parseInt(document.getElementById('quantidade').value);
+            const observacao = document.getElementById('observacao').value;
+            let pelotao = document.getElementById('pelotaoSelect').value;
+            
+            if (!nomeMilitar) {
+                showToast('Informe o nome do militar!', true);
+                document.getElementById('nomeMilitar').focus();
+                return;
+            }
+            
+            if (!responsavel) {
+                showToast('Informe o nome do responsavel!', true);
+                document.getElementById('responsavel').focus();
+                return;
+            }
+            
+            if (!materialId) {
+                showToast('Selecione um material!', true);
+                return;
+            }
+            
+            if (!quantidade || quantidade <= 0) {
+                showToast('Informe uma quantidade valida!', true);
+                return;
+            }
+            
+            const material = materiais.find(m => m.id == materialId);
+            if (!material) {
+                showToast('Material não encontrado!', true);
+                return;
+            }
+            
+            if (tipoAtual === 'CAUTELA') {
+                if (quantidade > (material.quantidade_disponivel || 0)) {
+                    showToast(`Quantidade insuficiente! Disponível: ${material.quantidade_disponivel || 0}`, true);
+                    return;
+                }
+            }
+            
+            const data = {
+                tipo: tipoAtual,
+                material_id: materialId,
+                quantidade: quantidade,
+                observacao: observacao,
+                pelotao: pelotao,
+                nome_militar: nomeMilitar,
+                responsavel: responsavel
+            };
+            
+            const result = await apiRequest('/api/cautela', { method: 'POST', body: JSON.stringify(data) });
+            
+            if (result && result.success) {
+                showToast(`${tipoAtual === 'CAUTELA' ? 'Cautela' : 'Descautela'} registrada com sucesso!`);
+                document.getElementById('nomeMilitar').value = '';
+                document.getElementById('responsavel').value = '';
+                document.getElementById('quantidade').value = 1;
+                document.getElementById('observacao').value = '';
+                document.getElementById('materialSearch').value = '';
+                document.getElementById('materialId').value = '';
+                materialSelecionado = null;
+                await carregarMateriais();
+                await carregarMovimentacoes();
+                atualizarInfoMaterial();
+            } else {
+                showToast(result?.message || 'Erro ao registrar movimentacao', true);
+            }
+        }
+
+        document.getElementById('btnRegistrar')?.addEventListener('click', registrarMovimentacao);
+
+        async function loadUser() {
+            try {
+                const response = await fetch('/api/usuario_atual', { credentials: 'same-origin' });
+                if (!response.ok) { window.location.href = '/'; return null; }
+                currentUser = await response.json();
+                document.getElementById('userName').innerText = currentUser.nome;
+                let roleText = '';
+                if (currentUser.nivel === 'DEV') roleText = '<i class="fas fa-code"></i> Desenvolvedor';
+                else if (currentUser.nivel === 'SUB') roleText = '<i class="fas fa-star-of-life"></i> Sub Tenente';
+                else if (currentUser.nivel === 'RESP') roleText = '<i class="fas fa-users"></i> Responsável';
+                else roleText = '<i class="fas fa-eye"></i> Leitura';
+                document.getElementById('userRole').innerHTML = roleText;
+                document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
+                
+                if (currentUser.nivel === 'RESP' && currentUser.pelotao) {
+                    const pelotaoSelect = document.getElementById('pelotaoSelect');
+                    pelotaoSelect.innerHTML = `<option value="${currentUser.pelotao}">${currentUser.pelotao}</option>`;
+                    pelotaoSelect.disabled = true;
+                } else if (currentUser.nivel === 'LEITURA') {
+                    document.getElementById('btnRegistrar').disabled = true;
+                    document.getElementById('btnRegistrar').style.opacity = '0.5';
+                    document.getElementById('btnRegistrar').style.cursor = 'not-allowed';
+                    document.getElementById('materialSearch').disabled = true;
+                    document.getElementById('materialSearch').placeholder = 'Acesso apenas para leitura';
+                }
+                
+                await carregarMateriais();
+                await carregarMovimentacoes();
+                
+                return currentUser;
+            } catch (error) {
+                window.location.href = '/';
+                return null;
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+            window.location.href = '/';
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('encmat_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i> <span>Modo Claro</span>';
+            }
+        }
+        
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('encmat_theme', isDark ? 'dark' : 'light');
+            const btn = document.getElementById('themeToggle');
+            btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
+        });
+
+        window.selecionarMaterial = selecionarMaterial;
+        
+        async function init() {
+            initTheme();
+            await loadUser();
+        }
+        
+        init();
+    </script>
+</body>
+</html>

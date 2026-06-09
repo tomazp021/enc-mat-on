@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ENC-MAT · Configurações</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #e8f0e8;
+            --bg-card: #ffffff;
+            --bg-sidebar: #f5faf5;
+            --text-primary: #1a2c1a;
+            --text-secondary: #4a6a4a;
+            --accent: #2d6a4f;
+            --accent-hover: #1b4d3e;
+            --accent-light: #d4e8d4;
+            --border: #c0d4c0;
+            --danger: #c44a3a;
+            --success: #2a7a4a;
+            --warning: #d48a2a;
+            --info: #2a6a8a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --input-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-primary: #0a1a0f;
+            --bg-card: #1a2a1f;
+            --bg-sidebar: #0f1f14;
+            --text-primary: #e8f0e8;
+            --text-secondary: #a0c0a0;
+            --accent: #c9a53b;
+            --accent-hover: #dbb84e;
+            --accent-light: #2a3a2a;
+            --border: #3a5a3a;
+            --danger: #d96c5c;
+            --success: #5a9a6a;
+            --warning: #d4a43a;
+            --info: #4a8aaa;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-hover: 0 12px 32px rgba(0,0,0,0.5);
+            --input-bg: #2a3a2a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--accent);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding-top: 70px;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.show {
+                display: block;
+            }
+        }
+
+        .logo-area {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .logo-area .logo-icon {
+            background: var(--accent-light);
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-area .logo-icon i {
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        .logo-area h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .logo-area p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info-sidebar {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .user-info-sidebar h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            word-break: break-word;
+        }
+        .user-info-sidebar .user-role {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .user-info-sidebar .user-pelotao {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-menu li {
+            margin-bottom: 0.3rem;
+        }
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .nav-menu a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .nav-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-menu a i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .logout-btn-sidebar {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .logout-btn-sidebar button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .logout-btn-sidebar button:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .theme-toggle {
+            background: var(--accent-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .settings-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .settings-card h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--border);
+            color: var(--accent);
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        .btn-action {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        .btn-action:hover {
+            background: var(--accent-hover);
+        }
+        .btn-danger {
+            background: var(--danger);
+        }
+        .btn-danger:hover {
+            background: #a03a2a;
+        }
+        .btn-warning {
+            background: var(--warning);
+        }
+        .backup-list, .categoria-list {
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .backup-item, .categoria-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .categoria-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .categoria-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .categoria-nome {
+            font-weight: 600;
+        }
+        .categoria-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .backup-item span, .categoria-item span {
+            font-size: 0.8rem;
+            word-break: break-all;
+        }
+        .action-icons i {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .action-icons i:hover {
+            color: var(--accent);
+        }
+
+        .info-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .restricted-access {
+            text-align: center;
+            padding: 3rem;
+        }
+        .restricted-access i {
+            font-size: 3rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        .modal-content input, .modal-content textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        .modal-buttons button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-top: 70px;
+            }
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .settings-card {
+                padding: 1rem;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .page-title h1 {
+                font-size: 1.2rem;
+            }
+            .backup-item, .categoria-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .settings-card {
+                padding: 0.8rem;
+            }
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+                <h2>ENC·MAT</h2>
+                <p>Controle de Estoque</p>
+            </div>
+            <div class="user-info-sidebar" id="sidebarUserInfo">
+                <i class="fas fa-user-shield"></i>
+                <h4 id="userName">Carregando...</h4>
+                <div class="user-role" id="userRole"></div>
+                <div class="user-pelotao" id="userPelotao"></div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/estoque_companhia"><i class="fas fa-cubes"></i> <span>Estoque Companhia</span></a></li>
+                <li><a href="/reserva_pelotao"><i class="fas fa-users"></i> <span>Reserva Pelotão</span></a></li>
+                <li><a href="/cautela"><i class="fas fa-exchange-alt"></i> <span>Cautela</span></a></li>
+                <li><a href="/historico"><i class="fas fa-history"></i> <span>Histórico</span></a></li>
+                <li><a href="/relatorios"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+                <li><a href="/usuarios"><i class="fas fa-users-cog"></i> <span>Usuários</span></a></li>
+                <li><a href="/configuracoes" class="active"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
+            </ul>
+            <div class="logout-btn-sidebar">
+                <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-cog"></i> Configurações do Sistema</h1>
+                    <p>Backup, categorias e configurações gerais</p>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                </button>
+            </div>
+
+            <div id="contentArea"></div>
+        </main>
+    </div>
+
+    <!-- Modal de Categoria -->
+    <div id="categoriaModal" class="modal">
+        <div class="modal-content">
+            <h3 id="categoriaModalTitle"><i class="fas fa-tag"></i> Nova Categoria</h3>
+            <input type="hidden" id="categoriaId">
+            <input type="text" id="categoriaNome" placeholder="Nome da categoria *">
+            <textarea id="categoriaDescricao" rows="3" placeholder="Descrição da categoria (opcional)"></textarea>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeCategoriaModal()">Cancelar</button>
+                <button class="btn-save" id="saveCategoriaBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Reset do Banco -->
+    <div id="resetModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Reset do Banco</h3>
+            <p style="margin-bottom: 1rem;">Esta ação irá:</p>
+            <ul style="margin-bottom: 1rem; margin-left: 1.5rem;">
+                <li>Apagar TODOS os dados do sistema</li>
+                <li>Recriar o banco de dados com os dados padrão</li>
+                <li>Resetar usuários, materiais e movimentações</li>
+            </ul>
+            <p style="color: var(--danger); font-weight: bold;">Esta ação NÃO pode ser desfeita!</p>
+            <div class="modal-buttons" style="margin-top: 1rem;">
+                <button class="btn-cancel" onclick="closeResetModal()">Cancelar</button>
+                <button class="btn-danger" id="confirmResetBtn">Resetar Banco</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+    <script>
+        let currentUser = null;
+        let backups = [];
+        let categorias = [];
+
+        // Menu Hamburguer
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', toggleMenu);
+        }
+        if (overlay) {
+            overlay.addEventListener('click', toggleMenu);
+        }
+
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    credentials: 'same-origin'
+                });
+                if (response.status === 401) { 
+                    window.location.href = '/'; 
+                    return null; 
+                }
+                if (response.status === 403) {
+                    showToast('Acesso negado. Você não tem permissão.', true);
+                    return null;
+                }
+                return await response.json();
+            } catch (error) { 
+                console.error(error); 
+                return null; 
+            }
+        }
+
+        // ========== BACKUP ==========
+        async function carregarBackups() {
+            const data = await apiRequest('/api/backup/listar');
+            if (data && data.success) {
+                backups = data.backups;
+                renderizarListaBackups();
+            }
+        }
+
+        function renderizarListaBackups() {
+            const container = document.getElementById('backupList');
+            if (!container) return;
+            
+            if (backups.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 1rem;">Nenhum backup encontrado</p>';
+                return;
+            }
+            
+            container.innerHTML = backups.map(b => `
+                <div class="backup-item">
+                    <span><i class="fas fa-database"></i> ${b.arquivo}</span>
+                    <span style="font-size: 0.7rem;">${b.data} - ${b.tamanho || 'N/A'}</span>
+                    <div class="action-icons">
+                        <i class="fas fa-download" onclick="baixarBackup('${b.arquivo}')" title="Baixar"></i>
+                        <i class="fas fa-trash" onclick="excluirBackup('${b.arquivo}')" title="Excluir" style="color: var(--danger);"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function criarBackup() {
+            showToast('Gerando backup...');
+            const result = await apiRequest('/api/backup/criar', { method: 'POST' });
+            if (result && result.success) {
+                showToast('Backup criado com sucesso!');
+                await carregarBackups();
+            } else {
+                showToast('Erro ao criar backup', true);
+            }
+        }
+
+        async function baixarBackup(arquivo) {
+            window.location.href = `/api/backup/baixar/${arquivo}`;
+        }
+
+        async function excluirBackup(arquivo) {
+            if (confirm(`Tem certeza que deseja excluir o backup ${arquivo}?`)) {
+                const result = await apiRequest(`/api/backup/excluir/${arquivo}`, { method: 'DELETE' });
+                if (result && result.success) {
+                    showToast('Backup excluído!');
+                    await carregarBackups();
+                } else {
+                    showToast('Erro ao excluir backup', true);
+                }
+            }
+        }
+
+        // ========== IMPORTAR / EXPORTAR BANCO ==========
+        function exportarBanco() {
+            window.location.href = '/api/exportar_banco';
+            showToast('Download do banco iniciado...');
+        }
+
+        function importarBanco() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.db';
+            input.onchange = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('banco', file);
+                
+                showToast('Importando banco de dados...');
+                try {
+                    const response = await fetch('/api/importar_banco', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast('Banco importado com sucesso! O sistema será reiniciado.');
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 2000);
+                    } else {
+                        showToast(result.message || 'Erro ao importar banco', true);
+                    }
+                } catch (error) {
+                    showToast('Erro ao importar banco', true);
+                }
+            };
+            input.click();
+        }
+
+        // ========== RESET DO BANCO ==========
+        function openResetModal() {
+            if (currentUser?.nivel !== 'DEV') {
+                showToast('Apenas desenvolvedores podem resetar o banco de dados!', true);
+                return;
+            }
+            document.getElementById('resetModal').style.display = 'flex';
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').style.display = 'none';
+        }
+
+        async function resetBanco() {
+            if (currentUser?.nivel !== 'DEV') {
+                showToast('Apenas desenvolvedores podem resetar o banco de dados!', true);
+                closeResetModal();
+                return;
+            }
+            
+            showToast('Resetando banco de dados...');
+            const result = await apiRequest('/api/reset_banco', { method: 'POST' });
+            if (result && result.success) {
+                showToast('Banco resetado com sucesso! O sistema será reiniciado.');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                showToast(result?.message || 'Erro ao resetar banco', true);
+            }
+            closeResetModal();
+        }
+
+        // ========== CATEGORIAS ==========
+        async function carregarCategorias() {
+            const data = await apiRequest('/api/categorias');
+            if (data && data.success) {
+                categorias = data.categorias;
+                renderizarListaCategorias();
+            }
+        }
+
+        function renderizarListaCategorias() {
+            const container = document.getElementById('categoriaList');
+            if (!container) return;
+            
+            if (categorias.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 1rem;">Nenhuma categoria cadastrada</p>';
+                return;
+            }
+            
+            container.innerHTML = categorias.map(c => `
+                <div class="categoria-item">
+                    <div class="categoria-info">
+                        <span class="categoria-nome"><i class="fas fa-tag"></i> ${escapeHtml(c.nome)}</span>
+                        <div class="action-icons">
+                            <i class="fas fa-edit" onclick="editarCategoria(${c.id}, '${escapeHtml(c.nome)}', '${escapeHtml(c.descricao || '')}')" title="Editar"></i>
+                            <i class="fas fa-trash" onclick="excluirCategoria(${c.id}, '${escapeHtml(c.nome)}')" title="Excluir" style="color: var(--danger);"></i>
+                        </div>
+                    </div>
+                    ${c.descricao ? `<div class="categoria-desc">${escapeHtml(c.descricao)}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function openCategoriaModal() {
+            if (currentUser?.nivel !== 'DEV') {
+                showToast('Apenas desenvolvedores podem gerenciar categorias!', true);
+                return;
+            }
+            document.getElementById('categoriaModalTitle').innerHTML = '<i class="fas fa-tag"></i> Nova Categoria';
+            document.getElementById('categoriaId').value = '';
+            document.getElementById('categoriaNome').value = '';
+            document.getElementById('categoriaDescricao').value = '';
+            document.getElementById('categoriaModal').style.display = 'flex';
+        }
+
+        function closeCategoriaModal() {
+            document.getElementById('categoriaModal').style.display = 'none';
+        }
+
+        function editarCategoria(id, nome, descricao) {
+            if (currentUser?.nivel !== 'DEV') {
+                showToast('Apenas desenvolvedores podem editar categorias!', true);
+                return;
+            }
+            document.getElementById('categoriaModalTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Categoria';
+            document.getElementById('categoriaId').value = id;
+            document.getElementById('categoriaNome').value = nome;
+            document.getElementById('categoriaDescricao').value = descricao;
+            document.getElementById('categoriaModal').style.display = 'flex';
+        }
+
+        async function excluirCategoria(id, nome) {
+            if (currentUser?.nivel !== 'DEV') {
+                showToast('Apenas desenvolvedores podem excluir categorias!', true);
+                return;
+            }
+            if (confirm(`Tem certeza que deseja excluir a categoria "${nome}"?\n\nEsta ação não poderá ser desfeita.`)) {
+                const result = await apiRequest(`/api/categorias/${id}`, { method: 'DELETE' });
+                if (result && result.success) {
+                    showToast('Categoria excluída com sucesso!');
+                    await carregarCategorias();
+                } else {
+                    showToast(result?.message || 'Erro ao excluir categoria', true);
+                }
+            }
+        }
+
+        async function salvarCategoria() {
+            const id = document.getElementById('categoriaId').value;
+            const nome = document.getElementById('categoriaNome').value.trim();
+            const descricao = document.getElementById('categoriaDescricao').value.trim();
+            
+            if (!nome) {
+                showToast('Informe o nome da categoria!', true);
+                return;
+            }
+            
+            const url = id ? `/api/categorias/${id}` : '/api/categorias';
+            const method = id ? 'PUT' : 'POST';
+            const body = { nome, descricao };
+            
+            const result = await apiRequest(url, { method, body: JSON.stringify(body) });
+            
+            if (result && result.success) {
+                showToast(id ? 'Categoria atualizada!' : 'Categoria criada!');
+                closeCategoriaModal();
+                await carregarCategorias();
+            } else {
+                showToast(result?.message || 'Erro ao salvar categoria', true);
+            }
+        }
+
+        // ========== SENHA ==========
+        async function alterarSenha() {
+            const senhaAtual = document.getElementById('senhaAtual')?.value;
+            const novaSenha = document.getElementById('novaSenha')?.value;
+            const confirmarSenha = document.getElementById('confirmarSenha')?.value;
+            
+            if (!senhaAtual || !novaSenha || !confirmarSenha) {
+                showToast('Preencha todos os campos!', true);
+                return;
+            }
+            
+            if (novaSenha !== confirmarSenha) {
+                showToast('As senhas não conferem!', true);
+                return;
+            }
+            
+            if (novaSenha.length < 3) {
+                showToast('A senha deve ter pelo menos 3 caracteres!', true);
+                return;
+            }
+            
+            const result = await apiRequest('/api/alterar_senha', {
+                method: 'POST',
+                body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
+            });
+            
+            if (result && result.success) {
+                showToast('Senha alterada com sucesso!');
+                document.getElementById('senhaAtual').value = '';
+                document.getElementById('novaSenha').value = '';
+                document.getElementById('confirmarSenha').value = '';
+            } else {
+                showToast(result?.message || 'Erro ao alterar senha', true);
+            }
+        }
+
+        // ========== RENDERIZAÇÃO PRINCIPAL ==========
+        function renderizarConfiguracoes() {
+            const container = document.getElementById('contentArea');
+            const isAdmin = currentUser?.nivel === 'DEV' || currentUser?.nivel === 'SUB';
+            const isDev = currentUser?.nivel === 'DEV';
+            
+            if (!isAdmin) {
+                container.innerHTML = `
+                    <div class="settings-card restricted-access">
+                        <i class="fas fa-lock"></i>
+                        <h2>Acesso Restrito</h2>
+                        <p>Apenas desenvolvedores e sub tenentes podem acessar as configurações do sistema.</p>
+                        <button class="btn-action" style="margin-top: 1rem;" onclick="window.location.href='/dashboard'">
+                            <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="settings-grid">
+                    <!-- Backup -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-database"></i> Backup e Gerenciamento</h2>
+                        <div class="form-group">
+                            <button class="btn-action" id="btnBackup">
+                                <i class="fas fa-cloud-upload-alt"></i> Criar Backup Agora
+                            </button>
+                            <button class="btn-action" id="btnExportarBanco" style="margin-left: 0.5rem;">
+                                <i class="fas fa-download"></i> Exportar Banco
+                            </button>
+                            <button class="btn-action" id="btnImportarBanco" style="margin-left: 0.5rem;">
+                                <i class="fas fa-upload"></i> Importar Banco
+                            </button>
+                            ${isDev ? `<button class="btn-danger" id="btnResetBanco" style="margin-left: 0.5rem;">
+                                <i class="fas fa-trash-alt"></i> Resetar Banco
+                            </button>` : ''}
+                            <p class="info-text">Gerencie backups, exporte e importe o banco de dados.</p>
+                        </div>
+                        <div class="backup-list" id="backupList">
+                            <p style="text-align: center; padding: 1rem;">Carregando backups...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Gerenciar Categorias (Apenas DEV) -->
+                    ${isDev ? `
+                    <div class="settings-card">
+                        <h2><i class="fas fa-tags"></i> Gerenciar Categorias</h2>
+                        <div class="form-group">
+                            <button class="btn-action" id="btnNovaCategoria">
+                                <i class="fas fa-plus"></i> Nova Categoria
+                            </button>
+                            <p class="info-text">Categorias disponíveis para os materiais do estoque.</p>
+                        </div>
+                        <div class="categoria-list" id="categoriaList">
+                            <p style="text-align: center; padding: 1rem;">Carregando categorias...</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Alterar Senha -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-key"></i> Alterar Senha</h2>
+                        <div class="form-group">
+                            <label>Senha Atual</label>
+                            <input type="password" id="senhaAtual" placeholder="Digite sua senha atual">
+                        </div>
+                        <div class="form-group">
+                            <label>Nova Senha</label>
+                            <input type="password" id="novaSenha" placeholder="Digite a nova senha">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirmar Nova Senha</label>
+                            <input type="password" id="confirmarSenha" placeholder="Confirme a nova senha">
+                        </div>
+                        <button class="btn-action" id="btnAlterarSenha">
+                            <i class="fas fa-save"></i> Alterar Senha
+                        </button>
+                    </div>
+                    
+                    <!-- Configurações Gerais -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-building"></i> Configurações Gerais</h2>
+                        <div class="form-group">
+                            <label>Nome da Companhia</label>
+                            <input type="text" id="nomeCompanhia" placeholder="1ª Companhia de Fuzileiros" value="1ª Companhia de Fuzileiros">
+                            <p class="info-text">Nome exibido no cabeçalho do sistema.</p>
+                        </div>
+                        <button class="btn-action" id="btnConfigGeral">
+                            <i class="fas fa-save"></i> Salvar Configurações
+                        </button>
+                    </div>
+                    
+                    <!-- Sobre -->
+                    <div class="settings-card">
+                        <h2><i class="fas fa-info-circle"></i> Sobre o Sistema</h2>
+                        <div class="form-group">
+                            <p><strong>ENC-MAT</strong> - Controle de Estoque e Material</p>
+                            <p>Versão: <strong>2.0.0</strong></p>
+                            <p>Desenvolvido para o controle de material da companhia</p>
+                            <hr style="margin: 0.8rem 0; border-color: var(--border);">
+                            <p class="info-text">
+                                <i class="fas fa-database"></i> Banco de dados: SQLite<br>
+                                <i class="fas fa-shield-alt"></i> LOG permanente de auditoria<br>
+                                <i class="fas fa-users"></i> Controle de acesso por nível
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('btnBackup')?.addEventListener('click', criarBackup);
+            document.getElementById('btnExportarBanco')?.addEventListener('click', exportarBanco);
+            document.getElementById('btnImportarBanco')?.addEventListener('click', importarBanco);
+            if (isDev) {
+                document.getElementById('btnResetBanco')?.addEventListener('click', openResetModal);
+            }
+            document.getElementById('btnAlterarSenha')?.addEventListener('click', alterarSenha);
+            document.getElementById('btnConfigGeral')?.addEventListener('click', () => {
+                showToast('Configuração salva!');
+            });
+            if (isDev) {
+                document.getElementById('btnNovaCategoria')?.addEventListener('click', openCategoriaModal);
+            }
+            
+            carregarBackups();
+            if (isDev) carregarCategorias();
+        }
+
+        async function loadUser() {
+            try {
+                const response = await fetch('/api/usuario_atual', { credentials: 'same-origin' });
+                if (!response.ok) { window.location.href = '/'; return null; }
+                currentUser = await response.json();
+                document.getElementById('userName').innerText = currentUser.nome;
+                let roleText = '';
+                if (currentUser.nivel === 'DEV') roleText = '<i class="fas fa-code"></i> Desenvolvedor';
+                else if (currentUser.nivel === 'SUB') roleText = '<i class="fas fa-star-of-life"></i> Sub Tenente';
+                else if (currentUser.nivel === 'RESP') roleText = '<i class="fas fa-users"></i> Responsável';
+                else roleText = '<i class="fas fa-eye"></i> Leitura';
+                document.getElementById('userRole').innerHTML = roleText;
+                document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
+                return currentUser;
+            } catch (error) {
+                window.location.href = '/';
+                return null;
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+            window.location.href = '/';
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('encmat_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i> <span>Modo Claro</span>';
+            }
+        }
+        
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('encmat_theme', isDark ? 'dark' : 'light');
+            const btn = document.getElementById('themeToggle');
+            btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
+        });
+
+        window.baixarBackup = baixarBackup;
+        window.excluirBackup = excluirBackup;
+        window.closeCategoriaModal = closeCategoriaModal;
+        window.closeResetModal = closeResetModal;
+        
+        document.getElementById('saveCategoriaBtn')?.addEventListener('click', salvarCategoria);
+        document.getElementById('confirmResetBtn')?.addEventListener('click', resetBanco);
+        
+        async function init() {
+            initTheme();
+            await loadUser();
+            renderizarConfiguracoes();
+        }
+        
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ENC-MAT · Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #e8f0e8;
+            --bg-card: #ffffff;
+            --bg-sidebar: #f5faf5;
+            --text-primary: #1a2c1a;
+            --text-secondary: #4a6a4a;
+            --accent: #2d6a4f;
+            --accent-hover: #1b4d3e;
+            --accent-light: #d4e8d4;
+            --border: #c0d4c0;
+            --danger: #c44a3a;
+            --success: #2a7a4a;
+            --warning: #d48a2a;
+            --info: #2a6a8a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --input-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-primary: #0a1a0f;
+            --bg-card: #1a2a1f;
+            --bg-sidebar: #0f1f14;
+            --text-primary: #e8f0e8;
+            --text-secondary: #a0c0a0;
+            --accent: #c9a53b;
+            --accent-hover: #dbb84e;
+            --accent-light: #2a3a2a;
+            --border: #3a5a3a;
+            --danger: #d96c5c;
+            --success: #5a9a6a;
+            --warning: #d4a43a;
+            --info: #4a8aaa;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-hover: 0 12px 32px rgba(0,0,0,0.5);
+            --input-bg: #2a3a2a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--accent);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding-top: 70px;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.show {
+                display: block;
+            }
+        }
+
+        .logo-area {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .logo-area .logo-icon {
+            background: var(--accent-light);
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-area .logo-icon i {
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        .logo-area h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .logo-area p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info-sidebar {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .user-info-sidebar h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            word-break: break-word;
+        }
+        .user-info-sidebar .user-role {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .user-info-sidebar .user-pelotao {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-menu li {
+            margin-bottom: 0.3rem;
+        }
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .nav-menu a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .nav-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-menu a i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .logout-btn-sidebar {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .logout-btn-sidebar button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .logout-btn-sidebar button:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .theme-toggle {
+            background: var(--accent-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        .stat-card .stat-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--accent-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.8rem;
+        }
+        .stat-card .stat-icon i {
+            font-size: 1.3rem;
+            color: var(--accent);
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .stat-card .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .section-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .section-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+        th, td {
+            padding: 0.7rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+        td {
+            font-size: 0.8rem;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .badge-normal { background: var(--success); color: white; }
+        .badge-critico { background: var(--danger); color: white; }
+        .badge-alerta { background: var(--warning); color: white; }
+
+        .pelotao-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .status-dot.bom { background: var(--success); }
+        .status-dot.alerta { background: var(--warning); }
+        .status-dot.critico { background: var(--danger); }
+
+        .chart-bar {
+            background: var(--accent-light);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .chart-bar-fill {
+            background: var(--accent);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-top: 70px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+            }
+            .stat-card {
+                padding: 0.8rem;
+            }
+            .stat-value {
+                font-size: 1.2rem;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .page-title h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+                <h2>ENC·MAT</h2>
+                <p>Controle de Estoque</p>
+            </div>
+            <div class="user-info-sidebar" id="sidebarUserInfo">
+                <i class="fas fa-user-shield"></i>
+                <h4 id="userName">Carregando...</h4>
+                <div class="user-role" id="userRole"></div>
+                <div class="user-pelotao" id="userPelotao"></div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/estoque_companhia"><i class="fas fa-cubes"></i> <span>Estoque Companhia</span></a></li>
+                <li><a href="/reserva_pelotao"><i class="fas fa-users"></i> <span>Reserva Pelotão</span></a></li>
+                <li><a href="/cautela"><i class="fas fa-exchange-alt"></i> <span>Cautela</span></a></li>
+                <li><a href="/historico"><i class="fas fa-history"></i> <span>Histórico</span></a></li>
+                <li><a href="/relatorios"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+                <li><a href="/usuarios"><i class="fas fa-users-cog"></i> <span>Usuários</span></a></li>
+                <li><a href="/configuracoes"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
+            </ul>
+            <div class="logout-btn-sidebar">
+                <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+                    <p>Visão geral do sistema e indicadores</p>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                </button>
+            </div>
+            <div id="dynamicContent">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-spinner fa-pulse"></i></div><div class="stat-value">--</div><div class="stat-label">Carregando...</div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let produtos = [];
+        let movimentacoes = [];
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    credentials: 'same-origin'
+                });
+                if (response.status === 401) { window.location.href = '/'; return null; }
+                return await response.json();
+            } catch (error) {
+                console.error('Erro:', error);
+                return null;
+            }
+        }
+
+        function getPelotaoStatus(totalItens, capacidadeTotal) {
+            if (capacidadeTotal === 0) return { status: 'critico', text: 'CRÍTICO' };
+            const percentual = (totalItens / capacidadeTotal) * 100;
+            if (percentual >= 70) return { status: 'critico', text: 'CRÍTICO' };
+            if (percentual >= 40) return { status: 'alerta', text: 'ALERTA' };
+            return { status: 'bom', text: 'NORMAL' };
+        }
+
+        async function carregarDashboard() {
+            const [dashboardData, produtosData, movData] = await Promise.all([
+                apiRequest('/api/dashboard'),
+                apiRequest('/api/estoque_companhia'),
+                apiRequest('/api/movimentacoes')
+            ]);
+            
+            if (produtosData && produtosData.success) produtos = produtosData.materiais || [];
+            if (movData && movData.success) movimentacoes = movData.movimentacoes || [];
+            
+            if (dashboardData && dashboardData.success) {
+                renderizarDashboard(dashboardData);
+            } else {
+                document.getElementById('dynamicContent').innerHTML = `
+                    <div class="section-card" style="text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger);"></i>
+                        <h3>Erro ao carregar dados</h3>
+                        <button class="theme-toggle" style="margin-top: 1rem;" onclick="location.reload()">
+                            <i class="fas fa-sync-alt"></i> Recarregar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderizarDashboard(dados) {
+            const { total_estoque, itens_baixos, total_cautelas, total_descautelas, resumo_pelotoes, movimentacoes: ultimasMov } = dados;
+            const totalReserva = total_estoque - (resumo_pelotoes?.reduce((s, p) => s + (p.total || 0), 0) || 0);
+            
+            // Calcular produtos mais movimentados
+            const movimentacoesPorMaterial = {};
+            movimentacoes.forEach(m => {
+                const nome = m.material_nome;
+                if (!movimentacoesPorMaterial[nome]) movimentacoesPorMaterial[nome] = 0;
+                movimentacoesPorMaterial[nome] += m.quantidade || 0;
+            });
+            const topMateriais = Object.entries(movimentacoesPorMaterial)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            // Calcular consumo mensal (últimos 6 meses)
+            const consumoMensal = {};
+            const hoje = new Date();
+            for (let i = 5; i >= 0; i--) {
+                const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                const mesAno = `${data.toLocaleString('pt-BR', { month: 'short' })}/${data.getFullYear()}`;
+                consumoMensal[mesAno] = 0;
+            }
+            
+            movimentacoes.forEach(m => {
+                if (m.data) {
+                    const partes = m.data.split('/');
+                    if (partes.length === 3) {
+                        const dataMov = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+                        for (let i = 5; i >= 0; i--) {
+                            const dataComp = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+                            if (dataMov.getMonth() === dataComp.getMonth() && dataMov.getFullYear() === dataComp.getFullYear()) {
+                                const mesAno = `${dataComp.toLocaleString('pt-BR', { month: 'short' })}/${dataComp.getFullYear()}`;
+                                consumoMensal[mesAno] += m.quantidade || 0;
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const maxConsumo = Math.max(...Object.values(consumoMensal), 1);
+            
+            document.getElementById('dynamicContent').innerHTML = `
+                <!-- Cards Principais -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                        <div class="stat-value">${total_estoque || 0}</div>
+                        <div class="stat-label">Total em Estoque</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-value">${itens_baixos || 0}</div>
+                        <div class="stat-label">Itens com Estoque Baixo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-hand-holding"></i></div>
+                        <div class="stat-value">${total_cautelas || 0}</div>
+                        <div class="stat-label">Cautelas Realizadas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-undo-alt"></i></div>
+                        <div class="stat-value">${total_descautelas || 0}</div>
+                        <div class="stat-label">Descautelas Realizadas</div>
+                    </div>
+                </div>
+                
+                <!-- Status dos Pelotões -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users"></i> Status dos Pelotões</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr><th>Pelotão</th><th>Total de Itens</th><th>Status</th><th>Ocupação</th></tr>
+                            </thead>
+                            <tbody>
+                                ${resumo_pelotoes && resumo_pelotoes.length > 0 ? resumo_pelotoes.map(p => {
+                                    const capacidadeTotal = 500; // Capacidade estimada
+                                    const ocupacao = Math.min(100, Math.round(((p.total || 0) / capacidadeTotal) * 100));
+                                    const { status, text } = getPelotaoStatus(p.total || 0, capacidadeTotal);
+                                    return `
+                                        <tr>
+                                            <td><strong>${p.nome}</strong></td>
+                                            <td>${p.total || 0} itens</td>
+                                            <td><span class="badge-status ${status === 'critico' ? 'badge-critico' : status === 'alerta' ? 'badge-alerta' : 'badge-normal'}">${text}</span></td>
+                                            <td>
+                                                <div class="chart-bar">
+                                                    <div class="chart-bar-fill" style="width: ${ocupacao}%; background: ${status === 'critico' ? 'var(--danger)' : status === 'alerta' ? 'var(--warning)' : 'var(--success)'};"></div>
+                                                </div>
+                                                <small>${ocupacao}%</small>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('') : '<tr><td colspan="4" style="text-align: center;">Nenhum dado disponível</td></tr>'}
+                                <tr style="background: var(--accent-light);">
+                                    <td><strong>Reserva Companhia</strong></td>
+                                    <td><strong>${totalReserva} itens</strong></td>
+                                    <td><span class="badge-status badge-normal">DISPONÍVEL</span></td>
+                                    <td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Gráfico de Consumo Mensal -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> Consumo Mensal</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead><tr><th>Mês</th><th>Quantidade Movimentada</th><th>Gráfico</th></tr></thead>
+                            <tbody>
+                                ${Object.entries(consumoMensal).map(([mes, qtd]) => `
+                                    <tr>
+                                        <td><strong>${mes}</strong></td>
+                                        <td>${qtd} itens</td>
+                                        <td style="width: 60%;">
+                                            <div class="chart-bar">
+                                                <div class="chart-bar-fill" style="width: ${(qtd / maxConsumo) * 100}%;"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Produtos Mais Movimentados -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-fire"></i> Produtos Mais Movimentados</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead><tr><th>Material</th><th>Total Movimentações</th><th>% do Total</th></tr></thead>
+                            <tbody>
+                                ${topMateriais.length > 0 ? topMateriais.map(([nome, total]) => {
+                                    const totalGeral = Object.values(movimentacoesPorMaterial).reduce((a, b) => a + b, 0);
+                                    const percentual = totalGeral > 0 ? Math.round((total / totalGeral) * 100) : 0;
+                                    return `
+                                        <tr>
+                                            <td><strong>${nome}</strong></td>
+                                            <td>${total} vezes</td>
+                                            <td style="width: 50%;">
+                                                <div class="chart-bar">
+                                                    <div class="chart-bar-fill" style="width: ${percentual}%;"></div>
+                                                </div>
+                                                <small>${percentual}%</small>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('') : '<tr><td colspan="3" style="text-align: center;">Nenhuma movimentação registrada</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Últimas Movimentações -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-history"></i> Últimas Movimentações</h2>
+                        <a href="/historico" style="color: var(--accent); font-size: 0.8rem;">Ver todas <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr><th>Data/Hora</th><th>Material</th><th>Tipo</th><th>Quantidade</th><th>Pelotão</th><th>Responsável</th></tr>
+                            </thead>
+                            <tbody>
+                                ${ultimasMov && ultimasMov.length > 0 ? ultimasMov.slice(0, 8).map(m => `
+                                    <tr>
+                                        <td>${m.data || '-'}<br><small>${m.hora || ''}</small></td>
+                                        <td><strong>${m.material_nome || '-'}</strong></td>
+                                        <td><span class="badge-status ${m.tipo === 'CAUTELA' ? 'badge-alerta' : 'badge-normal'}">${m.tipo === 'CAUTELA' ? 'RETIRADA' : 'DEVOLUÇÃO'}</span></td>
+                                        <td>${m.quantidade || 0}</td>
+                                        <td>${m.pelotao || '-'}</td>
+                                        <td>${m.usuario || '-'}</td>
+                                    </tr>
+                                `).join('') : '<tr><td colspan="6" style="text-align: center;">Nenhuma movimentação recente</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Alertas de Itens Críticos -->
+                ${produtos.filter(p => (p.quantidade_disponivel || 0) <= (p.quantidade_total || 0) * 0.3).length > 0 ? `
+                <div class="section-card" style="border-left: 4px solid var(--danger);">
+                    <div class="section-header">
+                        <h2><i class="fas fa-bell" style="color: var(--danger);"></i> Itens com Estoque Crítico</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead><tr><th>Código</th><th>Material</th><th>Disponível</th><th>Total</th><th>Necessidade</th></tr></thead>
+                            <tbody>
+                                ${produtos.filter(p => (p.quantidade_disponivel || 0) <= (p.quantidade_total || 0) * 0.3).slice(0, 5).map(p => `
+                                    <tr style="background: var(--danger); color: white;">
+                                        <td><strong>${p.codigo || '-'}</strong></td>
+                                        <td>${p.material || '-'}</td>
+                                        <td><strong>${p.quantidade_disponivel || 0}</strong></td>
+                                        <td>${p.quantidade_total || 0}</td>
+                                        <td>${Math.ceil((p.quantidade_total || 0) * 0.7)} unidades</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        async function loadUser() {
+            try {
+                const response = await fetch('/api/usuario_atual', { credentials: 'same-origin' });
+                if (!response.ok) { window.location.href = '/'; return null; }
+                currentUser = await response.json();
+                document.getElementById('userName').innerText = currentUser.nome || 'Usuário';
+                let roleText = '';
+                if (currentUser.nivel === 'DEV') roleText = '<i class="fas fa-code"></i> Desenvolvedor';
+                else if (currentUser.nivel === 'SUB') roleText = '<i class="fas fa-star-of-life"></i> Sub Tenente';
+                else if (currentUser.nivel === 'RESP') roleText = '<i class="fas fa-users"></i> Responsável';
+                else roleText = '<i class="fas fa-eye"></i> Leitura';
+                document.getElementById('userRole').innerHTML = roleText;
+                document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
+                return currentUser;
+            } catch (error) {
+                window.location.href = '/';
+                return null;
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+            window.location.href = '/';
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('encmat_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i> <span>Modo Claro</span>';
+            }
+        }
+        
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('encmat_theme', isDark ? 'dark' : 'light');
+            const btn = document.getElementById('themeToggle');
+            if (btn) btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
+        });
+
+        async function init() {
+            initTheme();
+            const user = await loadUser();
+            if (user) await carregarDashboard();
+        }
+        
+        init();
+    </script>
+</body>
+</html>

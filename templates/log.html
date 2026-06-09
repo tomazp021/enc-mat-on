@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ENC-MAT · LOG de Auditoria</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #eef2f8;
+            --bg-card: #ffffff;
+            --bg-sidebar: #ffffff;
+            --text-primary: #1a2c3e;
+            --text-secondary: #4a627a;
+            --accent: #1e5a8a;
+            --accent-hover: #0e3f62;
+            --accent-light: #e8f0f8;
+            --border: #dce5ec;
+            --danger: #c44a3a;
+            --success: #2a7a4a;
+            --warning: #d48a2a;
+            --info: #2a6a8a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.1);
+            --input-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-primary: #121826;
+            --bg-card: #1a2332;
+            --bg-sidebar: #1a2332;
+            --text-primary: #e8edf5;
+            --text-secondary: #9aacc8;
+            --accent: #3a8cbb;
+            --accent-hover: #5da3cf;
+            --accent-light: #1e2a3a;
+            --border: #2d3a4a;
+            --danger: #d96c5c;
+            --success: #5a9a6a;
+            --warning: #d4a43a;
+            --info: #4a8aaa;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --input-bg: #111827;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+
+        .logo-area {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .logo-area .logo-icon {
+            background: var(--accent-light);
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-area .logo-icon i {
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        .logo-area h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .logo-area p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info-sidebar {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .user-info-sidebar h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+        .user-info-sidebar .user-role {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .user-info-sidebar .user-pelotao {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-menu li {
+            margin-bottom: 0.3rem;
+        }
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .nav-menu a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .nav-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-menu a i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .logout-btn-sidebar {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .logout-btn-sidebar button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .logout-btn-sidebar button:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .theme-toggle {
+            background: var(--accent-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            background: var(--accent-light);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .alert-banner i {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+        .alert-banner p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        /* Section Card */
+        .section-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .section-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+        .filter-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.3rem;
+        }
+        select, input {
+            padding: 0.7rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .btn-filter {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .btn-filter:hover {
+            background: var(--accent-hover);
+        }
+        .btn-clear {
+            background: var(--border);
+            color: var(--text-primary);
+            border: none;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        .btn-clear:hover {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        /* Stats */
+        .stats-mini {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .stat-mini {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stat-mini i {
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+        .stat-mini span {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .stat-mini .count {
+            background: var(--accent);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            margin-left: 0.5rem;
+        }
+
+        /* Tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+        td {
+            font-size: 0.85rem;
+        }
+        .badge-acao {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-cadastro { background: var(--success); color: white; }
+        .badge-edicao { background: var(--info); color: white; }
+        .badge-remocao { background: var(--danger); color: white; }
+        .badge-movimentacao { background: var(--warning); color: white; }
+        .badge-login { background: var(--accent); color: white; }
+
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 80px; padding: 1rem 0.5rem; }
+            .sidebar .logo-area h2, .sidebar .logo-area p,
+            .sidebar .user-info-sidebar h4, .sidebar .user-info-sidebar .user-role,
+            .sidebar .user-info-sidebar .user-pelotao,
+            .nav-menu a span { display: none; }
+            .sidebar .logo-icon { width: 45px; height: 45px; }
+            .nav-menu a { justify-content: center; padding: 0.8rem; }
+            .nav-menu a i { margin: 0; }
+            .main-content { margin-left: 80px; }
+            table { display: block; overflow-x: auto; }
+            .filter-bar { flex-direction: column; }
+            .filter-group { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+            <h2>ENC·MAT</h2>
+            <p>Controle de Estoque</p>
+        </div>
+        <div class="user-info-sidebar" id="sidebarUserInfo">
+            <i class="fas fa-user-shield"></i>
+            <h4 id="userName">Carregando...</h4>
+            <div class="user-role" id="userRole"></div>
+            <div class="user-pelotao" id="userPelotao"></div>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="estoque.html"><i class="fas fa-cubes"></i> <span>Estoque Geral</span></a></li>
+            <li><a href="estoque_pelotao.html"><i class="fas fa-users"></i> <span>Estoque por Pelotão</span></a></li>
+            <li><a href="movimentacoes.html"><i class="fas fa-exchange-alt"></i> <span>Movimentações</span></a></li>
+            <li><a href="log.html" class="active"><i class="fas fa-history"></i> <span>LOG / Auditoria</span></a></li>
+            <li><a href="relatorios.html"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+            <li><a href="cadastro_produto.html"><i class="fas fa-plus-circle"></i> <span>Cadastrar Produto</span></a></li>
+            <li><a href="usuarios.html"><i class="fas fa-users-cog"></i> <span>Gestão de Usuários</span></a></li>
+            <li><a href="pelotoes.html"><i class="fas fa-building"></i> <span>Gestão de Pelotões</span></a></li>
+        </ul>
+        <div class="logout-btn-sidebar">
+            <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Sair do Sistema</span></button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="page-title">
+                <h1><i class="fas fa-history"></i> LOG de Auditoria</h1>
+                <p>Histórico permanente e imutável de todas as ações do sistema</p>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+            </button>
+        </div>
+
+        <!-- Banner de informação -->
+        <div class="alert-banner">
+            <i class="fas fa-shield-alt"></i>
+            <p><strong>LOG Permanente</strong> — Nenhum registro pode ser apagado ou alterado. Este histórico é imutável e serve como auditoria completa do sistema, garantindo rastreabilidade de todas as operações.</p>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h2><i class="fas fa-filter"></i> Filtros de Auditoria</h2>
+            </div>
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label><i class="fas fa-tag"></i> Tipo de Ação</label>
+                    <select id="filtroAcao">
+                        <option value="todos">Todas as ações</option>
+                        <option value="Login">🔐 Login</option>
+                        <option value="Cadastro">📦 Cadastro de Produto</option>
+                        <option value="Edição">✏️ Edição</option>
+                        <option value="Remoção">🗑️ Remoção</option>
+                        <option value="Movimentação">🔄 Movimentação</option>
+                        <option value="Ajuste">⚙️ Ajuste de Estoque</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-user"></i> Usuário</label>
+                    <select id="filtroUsuario">
+                        <option value="todos">Todos os usuários</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar"></i> Data Inicial</label>
+                    <input type="date" id="dataInicial">
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar"></i> Data Final</label>
+                    <input type="date" id="dataFinal">
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-search"></i> Busca</label>
+                    <input type="text" id="filtroBusca" placeholder="Item ou detalhe...">
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <button class="btn-filter" id="aplicarFiltros"><i class="fas fa-search"></i> Aplicar Filtros</button>
+                <button class="btn-clear" id="limparFiltros"><i class="fas fa-eraser"></i> Limpar Filtros</button>
+                <button class="btn-filter" id="exportarLog" style="background: var(--success);"><i class="fas fa-download"></i> Exportar LOG</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-header">
+                <h2><i class="fas fa-list"></i> Registros de Auditoria</h2>
+                <div class="stats-mini">
+                    <div class="stat-mini"><i class="fas fa-database"></i><span>Total de registros: <strong id="totalRegistros">0</strong></span></div>
+                    <div class="stat-mini"><i class="fas fa-clock"></i><span>Última atualização: <strong id="ultimaAtualizacao">-</strong></span></div>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="logTable">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Usuário</th>
+                            <th>Ação</th>
+                            <th>Item</th>
+                            <th>Qtd. Anterior</th>
+                            <th>Qtd. Nova</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logList"></tbody>
+                </table>
+                <div id="noData" class="no-data" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <p>Nenhum registro encontrado com os filtros aplicados</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // ============================================
+    // DADOS DO LOG (HISTÓRICO IMUTÁVEL)
+    // ============================================
+    let currentUser = null;
+    
+    // Log de auditoria - registros permanentes
+    let logEntries = [
+        { id: 1, data: new Date().toLocaleString(), usuario: "admin", acao: "Login", item: "-", qtd_anterior: "-", qtd_nova: "-", detalhes: "Usuário administrativo acessou o sistema" },
+        { id: 2, data: new Date().toLocaleString(), usuario: "admin", acao: "Cadastro", item: "Fuzil IA2", qtd_anterior: "-", qtd_nova: "45", detalhes: "Produto cadastrado no estoque geral" },
+        { id: 3, data: new Date().toLocaleString(), usuario: "admin", acao: "Cadastro", item: "Munição 5.56mm", qtd_anterior: "-", qtd_nova: "2800", detalhes: "Produto cadastrado no estoque geral" },
+        { id: 4, data: new Date().toLocaleString(), usuario: "admin", acao: "Cadastro", item: "Capacete Balístico", qtd_anterior: "-", qtd_nova: "38", detalhes: "Produto cadastrado no estoque geral" },
+        { id: 5, data: new Date().toLocaleString(), usuario: "admin", acao: "Cadastro", item: "Colete Balístico", qtd_anterior: "-", qtd_nova: "42", detalhes: "Produto cadastrado no estoque geral" },
+        { id: 6, data: new Date().toLocaleString(), usuario: "admin", acao: "Cadastro", item: "Rádio Comunicador", qtd_anterior: "-", qtd_nova: "12", detalhes: "Produto cadastrado no estoque geral" },
+        { id: 7, data: new Date().toLocaleString(), usuario: "pelotao1", acao: "Movimentação", item: "Munição 5.56mm", qtd_anterior: "2800", qtd_nova: "2600", detalhes: "Saída de 200 unidades para 1º Pelotão" },
+        { id: 8, data: new Date().toLocaleString(), usuario: "pelotao2", acao: "Movimentação", item: "Capacete Balístico", qtd_anterior: "38", qtd_nova: "35", detalhes: "Saída de 3 unidades para 2º Pelotão" },
+        { id: 9, data: new Date().toLocaleString(), usuario: "pelotao3", acao: "Movimentação", item: "Rádio Comunicador", qtd_anterior: "12", qtd_nova: "14", detalhes: "Devolução de 2 unidades ao estoque geral" },
+        { id: 10, data: new Date().toLocaleString(), usuario: "admin", acao: "Ajuste", item: "Capacete Balístico", qtd_anterior: "35", qtd_nova: "38", detalhes: "Reposição de estoque +3 unidades" }
+    ];
+    let nextLogId = 11;
+
+    // Função para adicionar entrada ao log (chamada por outras páginas)
+    window.adicionarLog = function(usuario, acao, item, qtdAnt, qtdNova, detalhes) {
+        const novaEntrada = {
+            id: nextLogId++,
+            data: new Date().toLocaleString(),
+            usuario: usuario,
+            acao: acao,
+            item: item,
+            qtd_anterior: qtdAnt.toString(),
+            qtd_nova: qtdNova.toString(),
+            detalhes: detalhes
+        };
+        logEntries.unshift(novaEntrada);
+        salvarLog();
+        return novaEntrada;
+    };
+
+    function salvarLog() {
+        localStorage.setItem('encmat_log', JSON.stringify(logEntries));
+        localStorage.setItem('encmat_nextLogId', nextLogId);
+    }
+
+    function carregarLog() {
+        const savedLog = localStorage.getItem('encmat_log');
+        if (savedLog) {
+            logEntries = JSON.parse(savedLog);
+        }
+        const savedId = localStorage.getItem('encmat_nextLogId');
+        if (savedId) {
+            nextLogId = parseInt(savedId);
+        }
+    }
+
+    // ============================================
+    // FUNÇÕES DE RENDERIZAÇÃO
+    // ============================================
+    function getBadgeAcao(acao) {
+        const classes = {
+            'Login': 'badge-login',
+            'Cadastro': 'badge-cadastro',
+            'Edição': 'badge-edicao',
+            'Remoção': 'badge-remocao',
+            'Movimentação': 'badge-movimentacao',
+            'Ajuste': 'badge-movimentacao'
+        };
+        const icones = {
+            'Login': '🔐',
+            'Cadastro': '📦',
+            'Edição': '✏️',
+            'Remoção': '🗑️',
+            'Movimentação': '🔄',
+            'Ajuste': '⚙️'
+        };
+        return `<span class="badge-acao ${classes[acao] || 'badge-movimentacao'}">${icones[acao] || '📋'} ${acao}</span>`;
+    }
+
+    function carregarUsuariosFiltro() {
+        const usuariosUnicos = [...new Set(logEntries.map(l => l.usuario))];
+        const select = document.getElementById('filtroUsuario');
+        select.innerHTML = '<option value="todos">Todos os usuários</option>' + 
+            usuariosUnicos.map(u => `<option value="${u}">${u}</option>`).join('');
+    }
+
+    function renderizarLog() {
+        const acaoFiltro = document.getElementById('filtroAcao').value;
+        const usuarioFiltro = document.getElementById('filtroUsuario').value;
+        const dataInicial = document.getElementById('dataInicial').value;
+        const dataFinal = document.getElementById('dataFinal').value;
+        const buscaTexto = document.getElementById('filtroBusca').value.toLowerCase();
+        
+        let filtrados = [...logEntries];
+        
+        // Filtro por ação
+        if (acaoFiltro !== 'todos') {
+            filtrados = filtrados.filter(l => l.acao === acaoFiltro);
+        }
+        
+        // Filtro por usuário
+        if (usuarioFiltro !== 'todos') {
+            filtrados = filtrados.filter(l => l.usuario === usuarioFiltro);
+        }
+        
+        // Filtro por data
+        if (dataInicial) {
+            filtrados = filtrados.filter(l => {
+                const dataLog = new Date(l.data);
+                const dataIni = new Date(dataInicial);
+                return dataLog >= dataIni;
+            });
+        }
+        if (dataFinal) {
+            filtrados = filtrados.filter(l => {
+                const dataLog = new Date(l.data);
+                const dataFim = new Date(dataFinal);
+                dataFim.setHours(23, 59, 59);
+                return dataLog <= dataFim;
+            });
+        }
+        
+        // Filtro por texto
+        if (buscaTexto) {
+            filtrados = filtrados.filter(l => 
+                l.item.toLowerCase().includes(buscaTexto) || 
+                l.detalhes.toLowerCase().includes(buscaTexto)
+            );
+        }
+        
+        // Atualizar contador
+        document.getElementById('totalRegistros').innerText = filtrados.length;
+        document.getElementById('ultimaAtualizacao').innerText = new Date().toLocaleTimeString();
+        
+        const tbody = document.getElementById('logList');
+        const noData = document.getElementById('noData');
+        
+        if (filtrados.length === 0) {
+            tbody.innerHTML = '';
+            noData.style.display = 'block';
+            return;
+        }
+        
+        noData.style.display = 'none';
+        tbody.innerHTML = filtrados.map(l => `
+            <tr>
+                <td style="white-space: nowrap;">${l.data}</td>
+                <td><strong>${l.usuario}</strong></td>
+                <td>${getBadgeAcao(l.acao)}</td>
+                <td><strong>${l.item}</strong></td>
+                <td>${l.qtd_anterior}</td>
+                <td>${l.qtd_nova}</td>
+                <td style="max-width: 300px;">${l.detalhes}</td>
+            </tr>
+        `).join('');
+    }
+
+    function aplicarFiltros() {
+        renderizarLog();
+    }
+    
+    function limparFiltros() {
+        document.getElementById('filtroAcao').value = 'todos';
+        document.getElementById('filtroUsuario').value = 'todos';
+        document.getElementById('dataInicial').value = '';
+        document.getElementById('dataFinal').value = '';
+        document.getElementById('filtroBusca').value = '';
+        renderizarLog();
+    }
+    
+    function exportarLog() {
+        let csvContent = "Data/Hora,Usuário,Ação,Item,Quantidade Anterior,Quantidade Nova,Detalhes\n";
+        logEntries.forEach(l => {
+            csvContent += `"${l.data}","${l.usuario}","${l.acao}","${l.item}","${l.qtd_anterior}","${l.qtd_nova}","${l.detalhes}"\n`;
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute('download', `encmat_log_${new Date().toISOString().slice(0,19)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        alert('LOG exportado com sucesso!');
+    }
+
+    // ============================================
+    // AUTENTICAÇÃO E TEMA
+    // ============================================
+    function loadUser() {
+        const userData = localStorage.getItem('encmat_user');
+        if (!userData) {
+            window.location.href = "index.html";
+            return null;
+        }
+        currentUser = JSON.parse(userData);
+        document.getElementById('userName').innerText = currentUser.nome;
+        document.getElementById('userRole').innerHTML = currentUser.nivel === 'ADMIN' ? '<i class="fas fa-crown"></i> Administrador' : 
+                                                      (currentUser.nivel === 'SUB_TENENTE' ? '<i class="fas fa-eye"></i> Sub Tenente' : 
+                                                      '<i class="fas fa-users"></i> Responsável');
+        document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
+        return currentUser;
+    }
+
+    function logout() {
+        localStorage.removeItem('encmat_user');
+        window.location.href = "index.html";
+    }
+
+    function initTheme() {
+        if (localStorage.getItem('encmat_theme') === 'dark') {
+            document.body.classList.add('dark');
+            const toggleBtn = document.getElementById('themeToggle');
+            if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-sun"></i> <span>Modo Claro</span>';
+        }
+    }
+
+    document.getElementById('themeToggle')?.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        localStorage.setItem('encmat_theme', isDark ? 'dark' : 'light');
+        const toggleBtn = document.getElementById('themeToggle');
+        if (toggleBtn) {
+            toggleBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
+        }
+    });
+
+    // Eventos
+    document.getElementById('aplicarFiltros')?.addEventListener('click', aplicarFiltros);
+    document.getElementById('limparFiltros')?.addEventListener('click', limparFiltros);
+    document.getElementById('exportarLog')?.addEventListener('click', exportarLog);
+    
+    // Eventos de mudança automática
+    document.getElementById('filtroAcao')?.addEventListener('change', renderizarLog);
+    document.getElementById('filtroUsuario')?.addEventListener('change', renderizarLog);
+    document.getElementById('dataInicial')?.addEventListener('change', renderizarLog);
+    document.getElementById('dataFinal')?.addEventListener('change', renderizarLog);
+    document.getElementById('filtroBusca')?.addEventListener('input', renderizarLog);
+
+    // ============================================
+    // INICIALIZAÇÃO
+    // ============================================
+    carregarLog();
+    loadUser();
+    initTheme();
+    carregarUsuariosFiltro();
+    renderizarLog();
+</script>
+</body>
+</html>

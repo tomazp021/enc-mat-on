@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ENC-MAT · Reserva dos Pelotões</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #e8f0e8;
+            --bg-card: #ffffff;
+            --bg-sidebar: #f5faf5;
+            --text-primary: #1a2c1a;
+            --text-secondary: #4a6a4a;
+            --accent: #2d6a4f;
+            --accent-hover: #1b4d3e;
+            --accent-light: #d4e8d4;
+            --border: #c0d4c0;
+            --danger: #c44a3a;
+            --success: #2a7a4a;
+            --warning: #d48a2a;
+            --info: #2a6a8a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --input-bg: #ffffff;
+        }
+
+        body.dark {
+            --bg-primary: #0a1a0f;
+            --bg-card: #1a2a1f;
+            --bg-sidebar: #0f1f14;
+            --text-primary: #e8f0e8;
+            --text-secondary: #a0c0a0;
+            --accent: #c9a53b;
+            --accent-hover: #dbb84e;
+            --accent-light: #2a3a2a;
+            --border: #3a5a3a;
+            --danger: #d96c5c;
+            --success: #5a9a6a;
+            --warning: #d4a43a;
+            --info: #4a8aaa;
+            --shadow: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-hover: 0 12px 32px rgba(0,0,0,0.5);
+            --input-bg: #2a3a2a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: var(--accent);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding-top: 70px;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .overlay.show {
+                display: block;
+            }
+        }
+
+        .logo-area {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        .logo-area .logo-icon {
+            background: var(--accent-light);
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-area .logo-icon i {
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+        .logo-area h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .logo-area p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-info-sidebar {
+            background: var(--accent-light);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .user-info-sidebar i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .user-info-sidebar h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+            word-break: break-word;
+        }
+        .user-info-sidebar .user-role {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .user-info-sidebar .user-pelotao {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+        .nav-menu li {
+            margin-bottom: 0.3rem;
+        }
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .nav-menu a:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        .nav-menu a.active {
+            background: var(--accent);
+            color: white;
+        }
+        .nav-menu a i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .logout-btn-sidebar {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        .logout-btn-sidebar button {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 0.7rem;
+            border-radius: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .logout-btn-sidebar button:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .theme-toggle {
+            background: var(--accent-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        .stat-card i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .section-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .section-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-pdf {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-light);
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+        }
+        .filter-pdf select {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.3rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+        td {
+            font-size: 0.85rem;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .badge-normal { background: var(--success); color: white; }
+        .badge-critico { background: var(--danger); color: white; }
+        .badge-alerta { background: var(--warning); color: white; }
+        .badge-disponivel { background: var(--success); color: white; }
+        .badge-emuso { background: var(--info); color: white; }
+        .badge-manutencao { background: var(--warning); color: white; }
+        .badge-extraviado { background: var(--danger); color: white; }
+        
+        .action-icons i {
+            margin: 0 0.3rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+            font-size: 1rem;
+        }
+        .action-icons i:hover {
+            color: var(--accent);
+        }
+
+        .search-bar {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+        .search-input {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+        }
+        .search-input i {
+            color: var(--text-secondary);
+        }
+        .search-input input {
+            flex: 1;
+            border: none;
+            background: none;
+            outline: none;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .btn-add {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        .btn-pdf {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        .btn-pdf:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .material-search-container {
+            position: relative;
+            width: 100%;
+        }
+        .material-search-input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .material-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+            box-shadow: var(--shadow);
+        }
+        .material-dropdown.show {
+            display: block;
+        }
+        .material-option {
+            padding: 0.8rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+        .material-option:hover {
+            background: var(--accent-light);
+        }
+        .material-option .material-codigo {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        .modal-buttons button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-save {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            border: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-top: 70px;
+            }
+            .search-bar {
+                flex-direction: column;
+            }
+            .search-input {
+                width: 100%;
+            }
+            .btn-add, .btn-pdf {
+                width: 100%;
+                justify-content: center;
+            }
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .page-title h1 {
+                font-size: 1.2rem;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            .stat-value {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .section-card {
+                padding: 1rem;
+            }
+            .section-header h2 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+                <h2>ENC·MAT</h2>
+                <p>Controle de Estoque</p>
+            </div>
+            <div class="user-info-sidebar" id="sidebarUserInfo">
+                <i class="fas fa-user-shield"></i>
+                <h4 id="userName">Carregando...</h4>
+                <div class="user-role" id="userRole"></div>
+                <div class="user-pelotao" id="userPelotao"></div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/estoque_companhia"><i class="fas fa-cubes"></i> <span>Estoque Companhia</span></a></li>
+                <li><a href="/reserva_pelotao" class="active"><i class="fas fa-users"></i> <span>Reserva Pelotão</span></a></li>
+                <li><a href="/cautela"><i class="fas fa-exchange-alt"></i> <span>Cautela</span></a></li>
+                <li><a href="/historico"><i class="fas fa-history"></i> <span>Histórico</span></a></li>
+                <li><a href="/relatorios"><i class="fas fa-chart-line"></i> <span>Relatórios</span></a></li>
+                <li><a href="/usuarios"><i class="fas fa-users-cog"></i> <span>Usuários</span></a></li>
+                <li><a href="/configuracoes"><i class="fas fa-cog"></i> <span>Configurações</span></a></li>
+            </ul>
+            <div class="logout-btn-sidebar">
+                <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1><i class="fas fa-users"></i> Reserva dos Pelotões</h1>
+                    <p id="subtitleMsg">Consulta de material distribuído por unidade</p>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                </button>
+            </div>
+
+            <div class="search-bar" id="searchBar">
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar por material...">
+                </div>
+                <div class="filter-pdf" id="pdfFilterContainer" style="display: none;">
+                    <i class="fas fa-filter"></i>
+                    <select id="pdfPelotaoFilter">
+                        <option value="todos">Todos os Pelotões</option>
+                        <option value="1º Pelotão">1º Pelotão</option>
+                        <option value="2º Pelotão">2º Pelotão</option>
+                        <option value="3º Pelotão">3º Pelotão</option>
+                        <option value="Material SUB">Material SUB</option>
+                    </select>
+                </div>
+                <button class="btn-add" id="btnAddProduto" style="display: none;"><i class="fas fa-plus"></i> Adicionar Produto</button>
+                <button class="btn-pdf" id="btnExportarPDF"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+            </div>
+
+            <div class="stats-grid" id="statsGrid"></div>
+            <div id="pelotoesContent"></div>
+        </main>
+    </div>
+
+    <!-- Modal Adicionar Produto -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-plus-circle"></i> Adicionar Produto ao Pelotão</h3>
+            <select id="addPelotao">
+                <option value="">Selecione o pelotão</option>
+                <option value="1º Pelotão">1º Pelotão</option>
+                <option value="2º Pelotão">2º Pelotão</option>
+                <option value="3º Pelotão">3º Pelotão</option>
+                <option value="Material SUB">Material SUB</option>
+            </select>
+            <div class="material-search-container">
+                <input type="text" id="materialSearchAdd" class="material-search-input" placeholder="Digite para buscar material...">
+                <input type="hidden" id="materialIdAdd">
+                <div id="materialDropdownAdd" class="material-dropdown"></div>
+            </div>
+            <input type="number" id="addQuantidade" placeholder="Quantidade" value="1" min="1">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeAddModal()">Cancelar</button>
+                <button class="btn-save" id="confirmAddBtn">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-edit"></i> Editar Item do Pelotão</h3>
+            <input type="hidden" id="editItemId">
+            <p><strong>Material:</strong> <span id="editMaterialNome"></span></p>
+            <label>Quantidade:</label>
+            <input type="number" id="editQuantidade" min="0">
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
+                <button class="btn-save" id="confirmEditBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Status -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-exchange-alt"></i> Alterar Status do Item</h3>
+            <input type="hidden" id="statusItemId">
+            <p><strong id="statusItemNome"></strong></p>
+            <select id="novoStatusItem">
+                <option value="DISPONIVEL">DISPONÍVEL</option>
+                <option value="EM_USO">EM USO</option>
+                <option value="MANUTENCAO">MANUTENÇÃO</option>
+                <option value="EXTRAVIADO">EXTRAVIADO</option>
+            </select>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeStatusModal()">Cancelar</button>
+                <button class="btn-save" id="confirmStatusBtn">Alterar Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Exclusão -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h3>
+            <p>Tem certeza que deseja remover este item do estoque do pelotão?</p>
+            <p><strong id="deleteItemName"></strong></p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" id="confirmDeleteBtn">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+    <script>
+        let currentUser = null;
+        let estoquePelotoes = [];
+        let produtos = [];
+        let editItemId = null;
+        let deleteItemId = null;
+        let statusItemId = null;
+        let materialSelecionadoAdd = null;
+
+        // Menu Hamburguer
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+        if (overlay) overlay.addEventListener('click', toggleMenu);
+
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = msg;
+            toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    credentials: 'same-origin'
+                });
+                if (response.status === 401) { window.location.href = '/'; return null; }
+                if (response.status === 403) return { success: false, message: 'Acesso negado' };
+                return await response.json();
+            } catch (error) { 
+                console.error(error); 
+                return { success: false, message: 'Erro de conexão' };
+            }
+        }
+
+        async function carregarEstoquePelotao() {
+            const data = await apiRequest('/api/estoque_pelotao');
+            if (data && data.success) {
+                estoquePelotoes = data.estoque || [];
+                await carregarProdutos();
+            }
+        }
+
+        async function carregarProdutos() {
+            const data = await apiRequest('/api/estoque_companhia');
+            if (data && data.success) {
+                produtos = data.materiais || [];
+                renderizarTudo();
+            }
+        }
+
+        function renderizarDropdownAdd() {
+            const searchTerm = document.getElementById('materialSearchAdd').value.toLowerCase();
+            const dropdown = document.getElementById('materialDropdownAdd');
+            
+            let filtered = produtos.filter(p => p.status !== 'INATIVO');
+            
+            if (searchTerm) {
+                filtered = filtered.filter(p => 
+                    p.material.toLowerCase().includes(searchTerm) || 
+                    p.codigo.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="material-option" style="text-align: center;">Nenhum material encontrado</div>';
+                dropdown.classList.add('show');
+                return;
+            }
+            
+            dropdown.innerHTML = filtered.slice(0, 10).map(p => `
+                <div class="material-option" onclick="selecionarMaterialAdd(${p.id}, '${p.material.replace(/'/g, "\\'")}', '${p.codigo}')">
+                    <div class="material-nome"><strong>${p.material}</strong></div>
+                    <div class="material-codigo">${p.codigo}</div>
+                </div>
+            `).join('');
+            dropdown.classList.add('show');
+        }
+
+        function selecionarMaterialAdd(id, nome, codigo) {
+            materialSelecionadoAdd = { id, nome, codigo };
+            document.getElementById('materialSearchAdd').value = `${codigo} - ${nome}`;
+            document.getElementById('materialIdAdd').value = id;
+            document.getElementById('materialDropdownAdd').classList.remove('show');
+        }
+
+        function fecharDropdownAdd(e) {
+            const container = document.querySelector('#addModal .material-search-container');
+            if (container && !container.contains(e.target)) {
+                document.getElementById('materialDropdownAdd').classList.remove('show');
+            }
+        }
+
+        function getStatusItemClass(status) {
+            switch(status) {
+                case 'DISPONIVEL': return 'badge-disponivel';
+                case 'EM_USO': return 'badge-emuso';
+                case 'MANUTENCAO': return 'badge-manutencao';
+                case 'EXTRAVIADO': return 'badge-extraviado';
+                default: return 'badge-normal';
+            }
+        }
+
+        function getStatusItemText(status) {
+            switch(status) {
+                case 'DISPONIVEL': return 'DISPONÍVEL';
+                case 'EM_USO': return 'EM USO';
+                case 'MANUTENCAO': return 'MANUTENÇÃO';
+                case 'EXTRAVIADO': return 'EXTRAVIADO';
+                default: return status || 'DISPONIVEL';
+            }
+        }
+
+        function getStatusEstoque(quantidade, min) {
+            if (min === 0) return "normal";
+            if (quantidade <= min) return "critico";
+            if (quantidade <= min * 1.5) return "alerta";
+            return "normal";
+        }
+
+        function renderizarStats() {
+            const statsGrid = document.getElementById('statsGrid');
+            const isResp = currentUser?.nivel === 'RESP';
+            
+            let pelotoesFiltrados = [...estoquePelotoes];
+            
+            if (isResp && currentUser?.pelotao) {
+                pelotoesFiltrados = pelotoesFiltrados.filter(p => p.pelotao === currentUser.pelotao);
+            }
+            
+            const pelotoesAgrupados = {};
+            pelotoesFiltrados.forEach(item => {
+                if (!pelotoesAgrupados[item.pelotao]) {
+                    pelotoesAgrupados[item.pelotao] = 0;
+                }
+                pelotoesAgrupados[item.pelotao] += item.quantidade;
+            });
+            
+            if (Object.keys(pelotoesAgrupados).length === 0) {
+                statsGrid.innerHTML = '';
+                return;
+            }
+            
+            statsGrid.innerHTML = Object.entries(pelotoesAgrupados).map(([nome, total]) => `
+                <div class="stat-card">
+                    <i class="fas fa-building"></i>
+                    <div class="stat-value">${total}</div>
+                    <div class="stat-label">${nome}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderizarPelotoes() {
+            const container = document.getElementById('pelotoesContent');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const isAdmin = currentUser?.nivel === 'DEV' || currentUser?.nivel === 'SUB';
+            const isResp = currentUser?.nivel === 'RESP';
+            const isReadOnly = currentUser?.nivel === 'LEITURA';
+            
+            let pelotoesFiltrados = [...estoquePelotoes];
+            
+            if (isResp && currentUser?.pelotao) {
+                pelotoesFiltrados = pelotoesFiltrados.filter(p => p.pelotao === currentUser.pelotao);
+                document.getElementById('subtitleMsg').innerText = `Visualizando reserva do ${currentUser.pelotao}`;
+            } else if (isAdmin) {
+                document.getElementById('subtitleMsg').innerText = 'Consulta de material distribuído por unidade (Acesso Total)';
+            } else if (isReadOnly) {
+                document.getElementById('subtitleMsg').innerText = 'Consulta de material distribuído por unidade (Somente Leitura)';
+            }
+            
+            if (searchTerm) {
+                pelotoesFiltrados = pelotoesFiltrados.filter(p => 
+                    p.material_nome.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            const pelotoesAgrupados = {};
+            pelotoesFiltrados.forEach(item => {
+                if (!pelotoesAgrupados[item.pelotao]) {
+                    pelotoesAgrupados[item.pelotao] = [];
+                }
+                pelotoesAgrupados[item.pelotao].push(item);
+            });
+            
+            if (Object.keys(pelotoesAgrupados).length === 0) {
+                container.innerHTML = `<div class="section-card" style="text-align: center;"><i class="fas fa-inbox" style="font-size: 3rem;"></i><p>Nenhum material encontrado.</p></div>`;
+                return;
+            }
+            
+            const podeEditar = !isReadOnly;
+            
+            container.innerHTML = Object.entries(pelotoesAgrupados).map(([pelotaoNome, itens]) => {
+                const totalItens = itens.reduce((sum, i) => sum + i.quantidade, 0);
+                
+                return `
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2><i class="fas fa-box"></i> ${pelotaoNome}</h2>
+                            <span style="background: var(--accent-light); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.7rem;">
+                                <i class="fas fa-boxes"></i> Total: ${totalItens} itens
+                            </span>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr><th>Código</th><th>Material</th><th>Quantidade</th><th>Mínimo</th><th>Status Estoque</th><th>Status Item</th>${podeEditar ? '<th>Ações</th>' : ''}</tr>
+                                </thead>
+                                <tbody>
+                                    ${itens.map(item => {
+                                        const produto = produtos.find(p => p.id === item.material_id);
+                                        const min = produto?.quantidade_total ? Math.floor(produto.quantidade_total * 0.3) : 10;
+                                        const statusEstoque = getStatusEstoque(item.quantidade, min);
+                                        const statusClass = statusEstoque === 'critico' ? 'badge-critico' : (statusEstoque === 'alerta' ? 'badge-alerta' : 'badge-normal');
+                                        const statusText = statusEstoque === 'critico' ? 'CRÍTICO' : (statusEstoque === 'alerta' ? 'ALERTA' : 'NORMAL');
+                                        return `
+                                            <tr>
+                                                <td>${item.codigo || '-'}</td>
+                                                <td><strong>${item.material_nome}</strong></td>
+                                                <td><strong>${item.quantidade}</strong></td>
+                                                <td>${min}</td>
+                                                <td><span class="badge-status ${statusClass}">${statusText}</span></td>
+                                                <td><span class="badge-status ${getStatusItemClass(item.status || 'DISPONIVEL')}">${getStatusItemText(item.status || 'DISPONIVEL')}</span></td>
+                                                ${podeEditar ? `
+                                                <td class="action-icons">
+                                                    <i class="fas fa-edit" onclick="openEditModal(${item.id}, '${item.material_nome.replace(/'/g, "\\'")}', ${item.quantidade})" title="Editar"></i>
+                                                    <i class="fas fa-exchange-alt" onclick="openStatusModal(${item.id}, '${item.material_nome.replace(/'/g, "\\'")}', '${item.status || 'DISPONIVEL'}')" title="Alterar Status"></i>
+                                                    <i class="fas fa-trash" onclick="openDeleteModal(${item.id}, '${item.material_nome.replace(/'/g, "\\'")}')" title="Excluir"></i>
+                                                </td>
+                                                ` : ''}
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderizarTudo() {
+            renderizarStats();
+            renderizarPelotoes();
+            
+            // Configurar filtro de PDF para admins
+            const isAdmin = currentUser?.nivel === 'DEV' || currentUser?.nivel === 'SUB';
+            const pdfFilterContainer = document.getElementById('pdfFilterContainer');
+            if (isAdmin && pdfFilterContainer) {
+                pdfFilterContainer.style.display = 'flex';
+            } else if (pdfFilterContainer) {
+                pdfFilterContainer.style.display = 'none';
+            }
+        }
+
+        function openAddModal() {
+            if (currentUser?.nivel === 'LEITURA') {
+                showToast('Usuário de leitura não pode adicionar produtos', true);
+                return;
+            }
+            
+            const isResp = currentUser?.nivel === 'RESP';
+            const pelotaoSelect = document.getElementById('addPelotao');
+            
+            if (isResp && currentUser?.pelotao) {
+                pelotaoSelect.innerHTML = `<option value="${currentUser.pelotao}">${currentUser.pelotao}</option>`;
+                pelotaoSelect.disabled = true;
+            } else {
+                pelotaoSelect.innerHTML = `
+                    <option value="">Selecione o pelotão</option>
+                    <option value="1º Pelotão">1º Pelotão</option>
+                    <option value="2º Pelotão">2º Pelotão</option>
+                    <option value="3º Pelotão">3º Pelotão</option>
+                    <option value="Material SUB">Material SUB</option>
+                `;
+                pelotaoSelect.disabled = false;
+            }
+            
+            document.getElementById('addModal').style.display = 'flex';
+            materialSelecionadoAdd = null;
+            document.getElementById('materialSearchAdd').value = '';
+            document.getElementById('materialIdAdd').value = '';
+            setTimeout(() => { document.getElementById('materialSearchAdd').focus(); }, 100);
+        }
+
+        function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+
+        async function confirmAdd() {
+            let pelotao = document.getElementById('addPelotao').value;
+            const materialId = document.getElementById('materialIdAdd').value;
+            const quantidade = parseInt(document.getElementById('addQuantidade').value);
+            
+            if (currentUser?.nivel === 'RESP' && currentUser?.pelotao) pelotao = currentUser.pelotao;
+            
+            if (!pelotao || !materialId || !quantidade || quantidade <= 0) {
+                showToast('Preencha todos os campos!', true);
+                return;
+            }
+            
+            const material = produtos.find(p => p.id == materialId);
+            if (!material) { showToast('Material não encontrado!', true); return; }
+            
+            const result = await apiRequest('/api/estoque_pelotao', {
+                method: 'POST',
+                body: JSON.stringify({ pelotao, material_id: materialId, material_nome: material.material, quantidade, status: 'DISPONIVEL' })
+            });
+            
+            if (result && result.success) {
+                showToast('Produto adicionado ao pelotão!');
+                closeAddModal();
+                carregarEstoquePelotao();
+            } else { showToast(result?.message || 'Erro ao adicionar', true); }
+        }
+
+        function openEditModal(id, materialNome, quantidade) {
+            editItemId = id;
+            document.getElementById('editMaterialNome').innerText = materialNome;
+            document.getElementById('editQuantidade').value = quantidade;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; editItemId = null; }
+
+        async function confirmEdit() {
+            const novaQuantidade = parseInt(document.getElementById('editQuantidade').value);
+            if (isNaN(novaQuantidade) || novaQuantidade < 0) { showToast('Quantidade inválida!', true); return; }
+            
+            const result = await apiRequest(`/api/estoque_pelotao/${editItemId}`, {
+                method: 'PUT', body: JSON.stringify({ quantidade: novaQuantidade })
+            });
+            
+            if (result && result.success) {
+                showToast('Quantidade atualizada!');
+                closeEditModal();
+                carregarEstoquePelotao();
+            } else { showToast('Erro ao atualizar', true); }
+        }
+
+        function openStatusModal(id, materialNome, statusAtual) {
+            statusItemId = id;
+            document.getElementById('statusItemNome').innerText = materialNome;
+            document.getElementById('novoStatusItem').value = statusAtual || 'DISPONIVEL';
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+
+        function closeStatusModal() { document.getElementById('statusModal').style.display = 'none'; statusItemId = null; }
+
+        async function confirmStatus() {
+            const novoStatus = document.getElementById('novoStatusItem').value;
+            const result = await apiRequest(`/api/estoque_pelotao/${statusItemId}/status`, {
+                method: 'PUT', body: JSON.stringify({ status: novoStatus })
+            });
+            
+            if (result && result.success) {
+                showToast(`Status alterado para ${novoStatus}!`);
+                closeStatusModal();
+                carregarEstoquePelotao();
+            } else { showToast('Erro ao alterar status', true); }
+        }
+
+        function openDeleteModal(id, materialNome) {
+            deleteItemId = id;
+            document.getElementById('deleteItemName').innerText = materialNome;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; deleteItemId = null; }
+
+        async function confirmDelete() {
+            const result = await apiRequest(`/api/estoque_pelotao/${deleteItemId}`, { method: 'DELETE' });
+            if (result && result.success) {
+                showToast('Item removido com sucesso!');
+                closeDeleteModal();
+                carregarEstoquePelotao();
+            } else { showToast('Erro ao remover item', true); }
+        }
+
+        async function exportarPDF() {
+            const pdfBtn = document.getElementById('btnExportarPDF');
+            
+            if (!estoquePelotoes || estoquePelotoes.length === 0) {
+                showToast('Não há dados para exportar!', true);
+                return;
+            }
+            
+            // Determinar qual pelotão exportar
+            let pelotaoFiltro = 'todos';
+            const isAdmin = currentUser?.nivel === 'DEV' || currentUser?.nivel === 'SUB';
+            const isResp = currentUser?.nivel === 'RESP';
+            
+            if (isResp && currentUser?.pelotao) {
+                pelotaoFiltro = currentUser.pelotao;
+            } else if (isAdmin) {
+                pelotaoFiltro = document.getElementById('pdfPelotaoFilter').value;
+            }
+            
+            pdfBtn.disabled = true;
+            pdfBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Gerando PDF...';
+            
+            try {
+                const dataToExport = {
+                    usuario: { nome: currentUser?.nome || 'N/A', nivel: currentUser?.nivel || 'N/A', pelotao: currentUser?.pelotao || null },
+                    estoque: estoquePelotoes,
+                    produtos: produtos,
+                    data: new Date().toLocaleString(),
+                    pelotao_filtro: pelotaoFiltro
+                };
+                
+                const response = await fetch('/api/exportar_reserva_pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToExport),
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `reserva_pelotoes_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    showToast('PDF exportado com sucesso!');
+                } else {
+                    const error = await response.text();
+                    showToast('Erro ao gerar PDF: ' + (error || 'Erro desconhecido'), true);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showToast('Erro ao gerar PDF', true);
+            } finally {
+                pdfBtn.disabled = false;
+                pdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Exportar PDF';
+            }
+        }
+
+        function configurarPermissoes() {
+            const isReadOnly = currentUser?.nivel === 'LEITURA';
+            const btnAdd = document.getElementById('btnAddProduto');
+            if (isReadOnly) { if (btnAdd) btnAdd.style.display = 'none'; } 
+            else { if (btnAdd) btnAdd.style.display = 'flex'; }
+        }
+
+        async function loadUser() {
+            try {
+                const response = await fetch('/api/usuario_atual', { credentials: 'same-origin' });
+                if (!response.ok) { window.location.href = '/'; return null; }
+                currentUser = await response.json();
+                document.getElementById('userName').innerText = currentUser.nome;
+                let roleText = '';
+                if (currentUser.nivel === 'DEV') roleText = '<i class="fas fa-code"></i> Desenvolvedor';
+                else if (currentUser.nivel === 'SUB') roleText = '<i class="fas fa-star-of-life"></i> Sub Tenente';
+                else if (currentUser.nivel === 'RESP') roleText = '<i class="fas fa-users"></i> Responsável';
+                else roleText = '<i class="fas fa-eye"></i> Leitura';
+                document.getElementById('userRole').innerHTML = roleText;
+                document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
+                configurarPermissoes();
+                return currentUser;
+            } catch (error) { window.location.href = '/'; return null; }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+            window.location.href = '/';
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('encmat_theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i> <span>Modo Claro</span>';
+            }
+        }
+        
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('encmat_theme', isDark ? 'dark' : 'light');
+            const btn = document.getElementById('themeToggle');
+            btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
+        });
+        
+        document.getElementById('searchInput')?.addEventListener('input', renderizarPelotoes);
+        document.getElementById('btnAddProduto')?.addEventListener('click', openAddModal);
+        document.getElementById('btnExportarPDF')?.addEventListener('click', exportarPDF);
+        document.getElementById('confirmAddBtn')?.addEventListener('click', confirmAdd);
+        document.getElementById('confirmEditBtn')?.addEventListener('click', confirmEdit);
+        document.getElementById('confirmStatusBtn')?.addEventListener('click', confirmStatus);
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+        
+        document.getElementById('materialSearchAdd')?.addEventListener('input', renderizarDropdownAdd);
+        document.getElementById('materialSearchAdd')?.addEventListener('focus', renderizarDropdownAdd);
+        document.addEventListener('click', fecharDropdownAdd);
+        
+        window.selecionarMaterialAdd = selecionarMaterialAdd;
+        window.openEditModal = openEditModal;
+        window.closeEditModal = closeEditModal;
+        window.openStatusModal = openStatusModal;
+        window.closeStatusModal = closeStatusModal;
+        window.openDeleteModal = openDeleteModal;
+        window.closeDeleteModal = closeDeleteModal;
+        window.closeAddModal = closeAddModal;
+        
+        async function init() {
+            initTheme();
+            await loadUser();
+            await carregarEstoquePelotao();
+        }
+        
+        init();
+    </script>
+</body>
+</html>
