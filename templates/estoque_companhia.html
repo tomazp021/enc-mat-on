@@ -6,6 +6,9 @@
     <title>ENC-MAT · Estoque da Companhia</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- jsPDF e html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -288,6 +291,23 @@
             background: var(--accent);
             color: white;
         }
+        .btn-pdf {
+            background: #c44a3a;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-pdf:hover {
+            background: #a63a2a;
+        }
 
         .search-bar {
             background: var(--bg-card);
@@ -511,6 +531,98 @@
             color: var(--text-secondary);
         }
 
+        /* PDF Content */
+        #pdfContent {
+            display: none;
+            background: white;
+            padding: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+            font-family: 'Inter', sans-serif;
+            color: #1a2c3e;
+        }
+        #pdfContent .pdf-header {
+            text-align: center;
+            border-bottom: 3px solid #2d6a4f;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        #pdfContent .pdf-header h1 {
+            font-size: 22px;
+            color: #2d6a4f;
+        }
+        #pdfContent .pdf-header p {
+            font-size: 11px;
+            color: #4a627a;
+        }
+        #pdfContent .pdf-deposito {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        #pdfContent .pdf-deposito h2 {
+            font-size: 16px;
+            background: #2d6a4f;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        #pdfContent .pdf-deposito h2 .total {
+            font-size: 12px;
+            font-weight: normal;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+        #pdfContent .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+            margin-bottom: 5px;
+        }
+        #pdfContent .pdf-table th {
+            background: #e6f4e6;
+            color: #2d6a4f;
+            padding: 5px 8px;
+            text-align: left;
+            border: 1px solid #c0d4c0;
+            font-weight: 700;
+            font-size: 8px;
+            text-transform: uppercase;
+        }
+        #pdfContent .pdf-table td {
+            padding: 4px 8px;
+            border: 1px solid #c0d4c0;
+        }
+        #pdfContent .pdf-table tr:nth-child(even) {
+            background: #f8faf8;
+        }
+        #pdfContent .pdf-footer {
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 9px;
+            color: #4a627a;
+            margin-top: 20px;
+        }
+        .pdf-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 7px;
+            font-weight: 600;
+        }
+        .pdf-badge-normal { background: #2a7a4a; color: white; }
+        .pdf-badge-critico { background: #c44a3a; color: white; }
+        .pdf-badge-alerta { background: #d48a2a; color: white; }
+        .pdf-badge-ativo { background: #2a7a4a; color: white; }
+        .pdf-badge-inativo { background: #c44a3a; color: white; }
+        .pdf-badge-manutencao { background: #d48a2a; color: white; }
+
         @media (max-width: 768px) {
             .main-content {
                 padding: 1rem;
@@ -587,6 +699,19 @@
         </main>
     </div>
 
+    <!-- PDF Content (hidden) -->
+    <div id="pdfContent">
+        <div class="pdf-header">
+            <h1>📦 ENC-MAT - RELATÓRIO DE ESTOQUE</h1>
+            <p>Gerado em: <span id="pdfDataGeracao"></span></p>
+            <p>Companhia: <span id="pdfCompanhia"></span></p>
+        </div>
+        <div id="pdfBody"></div>
+        <div class="pdf-footer">
+            <p>Sistema de Gestão de Estoque - ENC-MAT</p>
+        </div>
+    </div>
+
     <!-- Modal de Confirmação de Exclusão -->
     <div id="deleteModal" class="modal">
         <div class="modal-content">
@@ -609,6 +734,16 @@
             <input type="text" id="material" placeholder="Nome do material *" required>
             <select id="categoria" required>
                 <option value="">Selecione a categoria</option>
+            </select>
+            <select id="deposito" required>
+                <option value="Depósito 01">Depósito 01</option>
+                <option value="Depósito 02">Depósito 02</option>
+                <option value="Depósito 03">Depósito 03</option>
+                <option value="Depósito 04">Depósito 04</option>
+                <option value="Depósito 05">Depósito 05</option>
+                <option value="Depósito 06">Depósito 06</option>
+                <option value="Depósito 07">Depósito 07</option>
+                <option value="Depósito 08">Depósito 08</option>
             </select>
             <input type="number" id="quantidade_total" placeholder="Quantidade total" value="0">
             <input type="text" id="localizacao" placeholder="Localização">
@@ -634,6 +769,29 @@
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="closeStatusModal()">Cancelar</button>
                 <button class="btn-save" id="confirmStatusBtn">Alterar Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Depósito para PDF -->
+    <div id="pdfDepositoModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-print"></i> Gerar PDF por Depósito</h3>
+            <p style="margin-bottom: 1rem; color: var(--text-secondary);">Selecione o depósito para gerar o relatório:</p>
+            <select id="pdfDepositoSelect" style="width: 100%; padding: 0.8rem; border-radius: 12px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-primary); font-family: inherit;">
+                <option value="todos">Todos os Depósitos</option>
+                <option value="Depósito 01">Depósito 01</option>
+                <option value="Depósito 02">Depósito 02</option>
+                <option value="Depósito 03">Depósito 03</option>
+                <option value="Depósito 04">Depósito 04</option>
+                <option value="Depósito 05">Depósito 05</option>
+                <option value="Depósito 06">Depósito 06</option>
+                <option value="Depósito 07">Depósito 07</option>
+                <option value="Depósito 08">Depósito 08</option>
+            </select>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closePdfDepositoModal()">Cancelar</button>
+                <button class="btn-save" id="confirmPdfBtn">Gerar PDF</button>
             </div>
         </div>
     </div>
@@ -770,11 +928,13 @@
         function renderizarTabela() {
             const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
             const categoriaFilter = document.getElementById('categoriaFilter')?.value || '';
+            const depositoFilter = document.getElementById('depositoFilter')?.value || '';
             
             let filtered = materiais.filter(m => {
                 const matchSearch = m.codigo.toLowerCase().includes(searchTerm) || m.material.toLowerCase().includes(searchTerm);
                 const matchCategoria = !categoriaFilter || m.categoria === categoriaFilter;
-                return matchSearch && matchCategoria;
+                const matchDeposito = !depositoFilter || m.deposito === depositoFilter;
+                return matchSearch && matchCategoria && matchDeposito;
             });
             
             const tbody = document.getElementById('estoqueList');
@@ -791,6 +951,7 @@
                         <td><strong>${m.codigo}</strong></td>
                         <td>${m.material}</td>
                         <td>${m.categoria}</td>
+                        <td>${m.deposito || '-'}</td>
                         <td>${m.quantidade_total}</td>
                         <td>${m.quantidade_disponivel}</td>
                         <td><span class="badge-status ${statusClass}">${statusInfo.text}</span></td>
@@ -804,6 +965,12 @@
                     </tr>
                 `;
             }).join('');
+            
+            // Atualizar contador
+            const totalElement = document.getElementById('totalMateriais');
+            if (totalElement) {
+                totalElement.innerText = filtered.length;
+            }
         }
 
         function carregarPaginaCompleta() {
@@ -812,11 +979,14 @@
                 <div class="top-bar">
                     <div class="page-title">
                         <h1><i class="fas fa-cubes"></i> Estoque da Companhia</h1>
-                        <p>Gerenciamento do almoxarifado central</p>
+                        <p>Gerenciamento do almoxarifado central - <span id="totalMateriais">0</span> materiais</p>
                     </div>
-                    <button class="theme-toggle" id="themeTogglePage">
-                        <i class="fas fa-moon"></i> <span>Modo Escuro</span>
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn-pdf" id="btnPdfDeposito"><i class="fas fa-file-pdf"></i> PDF por Depósito</button>
+                        <button class="theme-toggle" id="themeTogglePage">
+                            <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="search-bar">
@@ -826,6 +996,17 @@
                     </div>
                     <select id="categoriaFilter" class="filter-select">
                         <option value="">Todas categorias</option>
+                    </select>
+                    <select id="depositoFilter" class="filter-select">
+                        <option value="">Todos depósitos</option>
+                        <option value="Depósito 01">Depósito 01</option>
+                        <option value="Depósito 02">Depósito 02</option>
+                        <option value="Depósito 03">Depósito 03</option>
+                        <option value="Depósito 04">Depósito 04</option>
+                        <option value="Depósito 05">Depósito 05</option>
+                        <option value="Depósito 06">Depósito 06</option>
+                        <option value="Depósito 07">Depósito 07</option>
+                        <option value="Depósito 08">Depósito 08</option>
                     </select>
                     ${(currentUser && (currentUser.nivel === 'DEV' || currentUser.nivel === 'SUB')) ? 
                         '<button class="btn-add" id="btnNovoMaterial"><i class="fas fa-plus"></i> Novo Material</button>' : 
@@ -843,6 +1024,7 @@
                                     <th>Código</th>
                                     <th>Material</th>
                                     <th>Categoria</th>
+                                    <th>Depósito</th>
                                     <th>Total</th>
                                     <th>Disponível</th>
                                     <th>Status Estoque</th>
@@ -860,9 +1042,13 @@
             // Re-conectar eventos após carregar o HTML
             document.getElementById('searchInput')?.addEventListener('input', renderizarTabela);
             document.getElementById('categoriaFilter')?.addEventListener('change', renderizarTabela);
+            document.getElementById('depositoFilter')?.addEventListener('change', renderizarTabela);
             
             const btnNovo = document.getElementById('btnNovoMaterial');
             if (btnNovo) btnNovo.addEventListener('click', openNovoModal);
+            
+            const btnPdf = document.getElementById('btnPdfDeposito');
+            if (btnPdf) btnPdf.addEventListener('click', openPdfDepositoModal);
             
             const themeTogglePage = document.getElementById('themeTogglePage');
             if (themeTogglePage) {
@@ -878,6 +1064,9 @@
             if (btn) btn.innerHTML = isDark ? '<i class="fas fa-sun"></i> <span>Modo Claro</span>' : '<i class="fas fa-moon"></i> <span>Modo Escuro</span>';
         }
 
+        // ============================================
+        // MODAIS
+        // ============================================
         function openEditModal(id) {
             const material = materiais.find(m => m.id === id);
             if (!material) return;
@@ -887,6 +1076,7 @@
             document.getElementById('codigo').value = material.codigo;
             document.getElementById('material').value = material.material;
             document.getElementById('categoria').value = material.categoria;
+            document.getElementById('deposito').value = material.deposito || 'Depósito 01';
             document.getElementById('quantidade_total').value = material.quantidade_total;
             document.getElementById('localizacao').value = material.localizacao || '';
             document.getElementById('observacao').value = material.observacao || '';
@@ -899,6 +1089,7 @@
             document.getElementById('codigo').value = '';
             document.getElementById('material').value = '';
             document.getElementById('categoria').value = '';
+            document.getElementById('deposito').value = 'Depósito 01';
             document.getElementById('quantidade_total').value = '';
             document.getElementById('localizacao').value = '';
             document.getElementById('observacao').value = '';
@@ -920,6 +1111,31 @@
             deleteMaterialId = null;
         }
 
+        function openStatusModal(id, nome, statusAtual) {
+            document.getElementById('statusMaterialId').value = id;
+            document.getElementById('statusMaterialNome').innerText = nome;
+            const select = document.getElementById('novoStatus');
+            if (statusAtual === 'ATIVO') select.value = 'ATIVO';
+            else if (statusAtual === 'INATIVO') select.value = 'INATIVO';
+            else select.value = 'MANUTENCAO';
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').style.display = 'none';
+        }
+
+        function openPdfDepositoModal() {
+            document.getElementById('pdfDepositoModal').style.display = 'flex';
+        }
+
+        function closePdfDepositoModal() {
+            document.getElementById('pdfDepositoModal').style.display = 'none';
+        }
+
+        // ============================================
+        // CRUD OPERATIONS
+        // ============================================
         async function confirmDelete() {
             if (deleteMaterialId) {
                 const result = await apiRequest(`/api/estoque_companhia/${deleteMaterialId}`, { 
@@ -934,20 +1150,6 @@
                     showToast(result?.message || 'Erro ao excluir material', true);
                 }
             }
-        }
-
-        function openStatusModal(id, nome, statusAtual) {
-            document.getElementById('statusMaterialId').value = id;
-            document.getElementById('statusMaterialNome').innerText = nome;
-            const select = document.getElementById('novoStatus');
-            if (statusAtual === 'ATIVO') select.value = 'ATIVO';
-            else if (statusAtual === 'INATIVO') select.value = 'INATIVO';
-            else select.value = 'MANUTENCAO';
-            document.getElementById('statusModal').style.display = 'flex';
-        }
-
-        function closeStatusModal() {
-            document.getElementById('statusModal').style.display = 'none';
         }
 
         async function alterarStatus() {
@@ -973,11 +1175,12 @@
             const codigo = document.getElementById('codigo').value.trim();
             const material = document.getElementById('material').value.trim();
             const categoria = document.getElementById('categoria').value;
+            const deposito = document.getElementById('deposito').value;
             const quantidade_total = parseInt(document.getElementById('quantidade_total').value) || 0;
             const localizacao = document.getElementById('localizacao').value;
             const observacao = document.getElementById('observacao').value;
             
-            if (!codigo || !material || !categoria) {
+            if (!codigo || !material || !categoria || !deposito) {
                 showToast('Preencha todos os campos obrigatórios!', true);
                 return;
             }
@@ -992,6 +1195,7 @@
                 codigo, 
                 material, 
                 categoria, 
+                deposito,
                 quantidade_total, 
                 quantidade_disponivel: quantidade_total,
                 localizacao, 
@@ -1020,6 +1224,133 @@
             }
         }
 
+        // ============================================
+        // GERAR PDF POR DEPÓSITO
+        // ============================================
+        function gerarPDF() {
+            const depositoSelecionado = document.getElementById('pdfDepositoSelect').value;
+            
+            // Preparar dados
+            let materiaisFiltrados = materiais;
+            let tituloDeposito = 'TODOS OS DEPÓSITOS';
+            
+            if (depositoSelecionado !== 'todos') {
+                materiaisFiltrados = materiais.filter(m => m.deposito === depositoSelecionado);
+                tituloDeposito = depositoSelecionado;
+            }
+            
+            if (materiaisFiltrados.length === 0) {
+                showToast('Nenhum material encontrado para este depósito!', true);
+                closePdfDepositoModal();
+                return;
+            }
+            
+            document.getElementById('pdfDataGeracao').textContent = new Date().toLocaleString('pt-BR');
+            document.getElementById('pdfCompanhia').textContent = currentUser?.companhia || 'Companhia';
+            
+            // Agrupar por depósito
+            const depositos = {};
+            materiaisFiltrados.forEach(m => {
+                const dep = m.deposito || 'Sem Depósito';
+                if (!depositos[dep]) depositos[dep] = [];
+                depositos[dep].push(m);
+            });
+            
+            let html = '';
+            const depositosOrdenados = Object.keys(depositos).sort();
+            
+            depositosOrdenados.forEach(dep => {
+                const itens = depositos[dep];
+                const totalItens = itens.length;
+                const totalQuantidade = itens.reduce((sum, m) => sum + (m.quantidade_total || 0), 0);
+                
+                html += `
+                    <div class="pdf-deposito">
+                        <h2>📦 ${dep} <span class="total">${totalItens} itens | ${totalQuantidade} unidades</span></h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Material</th>
+                                    <th>Categoria</th>
+                                    <th>Total</th>
+                                    <th>Disponível</th>
+                                    <th>Status Estoque</th>
+                                    <th>Status Item</th>
+                                    <th>Localização</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itens.map(m => {
+                                    const statusInfo = getStatusEstoque(m.quantidade_disponivel, m.quantidade_total);
+                                    const statusClass = statusInfo.status === 'critico' ? 'pdf-badge-critico' : (statusInfo.status === 'alerta' ? 'pdf-badge-alerta' : 'pdf-badge-normal');
+                                    const itemStatusClass = m.status === 'ATIVO' ? 'pdf-badge-ativo' : (m.status === 'INATIVO' ? 'pdf-badge-inativo' : 'pdf-badge-manutencao');
+                                    return `
+                                        <tr>
+                                            <td>${m.codigo}</td>
+                                            <td>${m.material}</td>
+                                            <td>${m.categoria}</td>
+                                            <td>${m.quantidade_total}</td>
+                                            <td>${m.quantidade_disponivel}</td>
+                                            <td><span class="pdf-badge ${statusClass}">${statusInfo.text}</span></td>
+                                            <td><span class="pdf-badge ${itemStatusClass}">${getStatusItemText(m.status || 'ATIVO')}</span></td>
+                                            <td>${m.localizacao || '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('pdfBody').innerHTML = html;
+            closePdfDepositoModal();
+            
+            // Gerar PDF
+            const element = document.getElementById('pdfContent');
+            element.style.display = 'block';
+            
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                width: element.scrollWidth,
+                height: element.scrollHeight
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                let heightLeft = pdfHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                heightLeft -= pdf.internal.pageSize.getHeight();
+
+                while (heightLeft > 0) {
+                    position = heightLeft - pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                    heightLeft -= pdf.internal.pageSize.getHeight();
+                }
+
+                const nomeDeposito = depositoSelecionado === 'todos' ? 'Todos_Depositos' : depositoSelecionado.replace(/\s/g, '_');
+                pdf.save(`Estoque_${nomeDeposito}_${new Date().toISOString().split('T')[0]}.pdf`);
+                element.style.display = 'none';
+            }).catch(err => {
+                console.error('Erro ao gerar PDF:', err);
+                alert('Erro ao gerar PDF. Tente novamente.');
+                element.style.display = 'none';
+            });
+        }
+
+        // ============================================
+        // AUTH
+        // ============================================
         async function loadUser() {
             try {
                 const response = await fetch('/api/usuario_atual', { credentials: 'same-origin' });
@@ -1034,7 +1365,6 @@
                 document.getElementById('userRole').innerHTML = roleText;
                 document.getElementById('userPelotao').innerHTML = currentUser.pelotao ? `<i class="fas fa-building"></i> ${currentUser.pelotao}` : '<i class="fas fa-globe"></i> Acesso Geral';
                 
-                // Verificar permissão de acesso (apenas DEV ou SUB)
                 if (currentUser.nivel !== 'DEV' && currentUser.nivel !== 'SUB') {
                     showAccessDenied();
                     return null;
@@ -1063,6 +1393,7 @@
         document.getElementById('saveMaterialBtn')?.addEventListener('click', salvarMaterial);
         document.getElementById('confirmStatusBtn')?.addEventListener('click', alterarStatus);
         document.getElementById('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+        document.getElementById('confirmPdfBtn')?.addEventListener('click', gerarPDF);
         
         window.openEditModal = openEditModal;
         window.closeModal = closeModal;
@@ -1070,6 +1401,8 @@
         window.closeStatusModal = closeStatusModal;
         window.openDeleteModal = openDeleteModal;
         window.closeDeleteModal = closeDeleteModal;
+        window.openPdfDepositoModal = openPdfDepositoModal;
+        window.closePdfDepositoModal = closePdfDepositoModal;
         
         async function init() {
             initTheme();

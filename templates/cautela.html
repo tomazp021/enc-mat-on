@@ -6,6 +6,9 @@
     <title>ENC-MAT · Cautela e Descautela</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- jsPDF e html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -274,6 +277,11 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
         }
+        .top-bar-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
         .theme-toggle {
             background: var(--accent-light);
             border: none;
@@ -291,6 +299,23 @@
         .theme-toggle:hover {
             background: var(--accent);
             color: white;
+        }
+        .btn-pdf {
+            background: #c44a3a;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-pdf:hover {
+            background: #a63a2a;
         }
 
         .form-card {
@@ -552,6 +577,64 @@
             gap: 8px;
         }
 
+        /* PDF Content */
+        #pdfContent {
+            display: none;
+            background: white;
+            padding: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+            font-family: 'Inter', sans-serif;
+            color: #1a2c3e;
+        }
+        #pdfContent .pdf-header {
+            text-align: center;
+            border-bottom: 3px solid #2d6a4f;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        #pdfContent .pdf-header h1 {
+            font-size: 22px;
+            color: #2d6a4f;
+        }
+        #pdfContent .pdf-header p {
+            font-size: 11px;
+            color: #4a627a;
+        }
+        #pdfContent .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+            margin-bottom: 5px;
+        }
+        #pdfContent .pdf-table th {
+            background: #e6f4e6;
+            color: #2d6a4f;
+            padding: 5px 8px;
+            text-align: left;
+            border: 1px solid #c0d4c0;
+            font-weight: 700;
+            font-size: 8px;
+            text-transform: uppercase;
+        }
+        #pdfContent .pdf-table td {
+            padding: 4px 8px;
+            border: 1px solid #c0d4c0;
+        }
+        #pdfContent .pdf-table tr:nth-child(even) {
+            background: #f8faf8;
+        }
+        #pdfContent .pdf-footer {
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 9px;
+            color: #4a627a;
+            margin-top: 20px;
+        }
+        .pdf-badge-cautela { background: #c44a3a; color: white; padding: 1px 8px; border-radius: 12px; font-size: 7px; font-weight: 600; }
+        .pdf-badge-descautela { background: #2a7a4a; color: white; padding: 1px 8px; border-radius: 12px; font-size: 7px; font-weight: 600; }
+
         @media (max-width: 768px) {
             .main-content {
                 padding: 1rem;
@@ -626,9 +709,12 @@
                     <h1><i class="fas fa-exchange-alt"></i> Cautela e Descautela</h1>
                     <p>Registro de retirada e devolução de material</p>
                 </div>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i> <span>Modo Escuro</span>
-                </button>
+                <div class="top-bar-actions">
+                    <button class="btn-pdf" id="btnPdfHistorico"><i class="fas fa-file-pdf"></i> PDF Histórico</button>
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                    </button>
+                </div>
             </div>
 
             <div class="form-card">
@@ -704,6 +790,19 @@
         </main>
     </div>
 
+    <!-- PDF Content (hidden) -->
+    <div id="pdfContent">
+        <div class="pdf-header">
+            <h1>📋 HISTÓRICO DE CAUTELAS E DESCAUTELAS</h1>
+            <p>Gerado em: <span id="pdfDataGeracao"></span></p>
+            <p id="pdfUsuarioInfo"></p>
+        </div>
+        <div id="pdfBody"></div>
+        <div class="pdf-footer">
+            <p>ENC-MAT - Sistema de Gestão de Estoque</p>
+        </div>
+    </div>
+
     <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
 
     <script>
@@ -776,7 +875,6 @@
         async function carregarMateriaisPelotao() {
             const data = await apiRequest('/api/estoque_pelotao');
             if (data && data.success) {
-                // Filtrar apenas materiais do pelotão do usuário que tem quantidade > 0
                 const pelotao = currentUser.pelotao;
                 materiaisPelotao = data.estoque.filter(e => e.pelotao === pelotao);
                 renderizarDropdownPelotao();
@@ -790,6 +888,8 @@
             
             let filtered = materiais;
             
+            // Para CAUTELA: mostra apenas materiais com quantidade > 0
+            // Para DESCAUTELA: mostra todos os materiais ativos
             if (tipoAtual === 'CAUTELA') {
                 filtered = materiais.filter(m => m.quantidade_disponivel > 0);
             }
@@ -811,7 +911,7 @@
                 <div class="material-option" onclick="selecionarMaterialCompanhia(${m.id}, '${m.material.replace(/'/g, "\\'")}', '${m.codigo}', ${m.quantidade_disponivel || 0})">
                     <div class="material-nome">${m.material}</div>
                     <div class="material-codigo">${m.codigo}</div>
-                    <div class="material-qtd">${tipoAtual === 'CAUTELA' ? `${m.quantidade_disponivel || 0} disponíveis` : ''}</div>
+                    <div class="material-qtd">${tipoAtual === 'CAUTELA' ? `${m.quantidade_disponivel || 0} disponíveis` : `${m.quantidade_total || 0} no estoque`}</div>
                 </div>
             `).join('');
             dropdown.classList.add('show');
@@ -841,7 +941,7 @@
                 <div class="material-option" onclick="selecionarMaterialPelotao(${m.material_id}, '${m.material_nome.replace(/'/g, "\\'")}', '${m.codigo || ''}', ${m.quantidade || 0})">
                     <div class="material-nome">${m.material_nome}</div>
                     <div class="material-codigo">${m.codigo || 'SEM CÓDIGO'}</div>
-                    <div class="material-qtd">${tipoAtual === 'DESCAUTELA' ? `${m.quantidade || 0} disponíveis para devolução` : ''}</div>
+                    <div class="material-qtd">${tipoAtual === 'DESCAUTELA' ? `${m.quantidade || 0} disponíveis para devolução` : `${m.quantidade || 0} no pelotão`}</div>
                 </div>
             `).join('');
             dropdown.classList.add('show');
@@ -911,9 +1011,9 @@
                 filtradas = filtradas.filter(m => m.pelotao === currentUser.pelotao);
             }
             
-            tbody.innerHTML = filtradas.slice(0, 20).map(m => `
+            tbody.innerHTML = filtradas.slice(0, 50).map(m => `
                 <tr>
-                    <td>${m.data || '-'} ${m.hora || ''}</td>
+                    <td>${m.data_hora || m.data || '-'}</td>
                     <td>${m.nome_militar || '-'}</td>
                     <td>${m.responsavel || '-'}</td>
                     <td>${m.material_nome || '-'}</td>
@@ -940,8 +1040,7 @@
             if (tipoAtual === 'CAUTELA') {
                 infoText.innerHTML = `<strong>${materialSelecionado.codigo} - ${materialSelecionado.nome}</strong> - Quantidade disponível: <strong>${materialSelecionado.disponivel} unidades</strong>`;
             } else {
-                const pelotao = document.getElementById('pelotaoSelect').value;
-                infoText.innerHTML = `<strong>${materialSelecionado.codigo} - ${materialSelecionado.nome}</strong><br>Quantidade disponível para devolução: <strong>${materialSelecionado.disponivel} unidades</strong>`;
+                infoText.innerHTML = `<strong>${materialSelecionado.codigo} - ${materialSelecionado.nome}</strong> - Quantidade para devolução: <strong>${materialSelecionado.disponivel} unidades</strong>`;
             }
         }
 
@@ -1028,11 +1127,6 @@
                     showToast(`Quantidade insuficiente! Disponível: ${materialSelecionado?.disponivel || 0}`, true);
                     return;
                 }
-            } else {
-                if (quantidade > (materialSelecionado?.disponivel || 0)) {
-                    showToast(`Quantidade insuficiente para devolução! Disponível: ${materialSelecionado?.disponivel || 0}`, true);
-                    return;
-                }
             }
             
             const data = {
@@ -1075,6 +1169,106 @@
 
         document.getElementById('btnRegistrar')?.addEventListener('click', registrarMovimentacao);
 
+        // ============================================
+        // GERAR PDF DO HISTÓRICO
+        // ============================================
+        function gerarPDFHistorico() {
+            if (movimentacoes.length === 0) {
+                showToast('Nenhuma movimentação para gerar PDF!', true);
+                return;
+            }
+            
+            const isResp = currentUser?.nivel === 'RESP';
+            let filtradas = movimentacoes;
+            if (isResp && currentUser?.pelotao) {
+                filtradas = filtradas.filter(m => m.pelotao === currentUser.pelotao);
+            }
+            
+            if (filtradas.length === 0) {
+                showToast('Nenhuma movimentação para gerar PDF!', true);
+                return;
+            }
+            
+            document.getElementById('pdfDataGeracao').textContent = new Date().toLocaleString('pt-BR');
+            document.getElementById('pdfUsuarioInfo').textContent = `Companhia: ${currentUser?.companhia || 'N/A'} | Pelotão: ${currentUser?.pelotao || 'Geral'}`;
+            
+            let html = `
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Militar</th>
+                            <th>Responsável</th>
+                            <th>Material</th>
+                            <th>Tipo</th>
+                            <th>Qtd</th>
+                            <th>Pelotão</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtradas.map(m => `
+                            <tr>
+                                <td>${m.data_hora || m.data || '-'}</td>
+                                <td>${m.nome_militar || '-'}</td>
+                                <td>${m.responsavel || '-'}</td>
+                                <td>${m.material_nome || '-'}</td>
+                                <td><span class="${m.tipo === 'CAUTELA' ? 'pdf-badge-cautela' : 'pdf-badge-descautela'}">${m.tipo === 'CAUTELA' ? 'CAUTELA' : 'DESCAUTELA'}</span></td>
+                                <td>${m.quantidade || 0}</td>
+                                <td>${m.pelotao || '-'}</td>
+                                <td>${m.observacao || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('pdfBody').innerHTML = html;
+            
+            const element = document.getElementById('pdfContent');
+            element.style.display = 'block';
+            
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                width: element.scrollWidth,
+                height: element.scrollHeight
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                let heightLeft = pdfHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                heightLeft -= pdf.internal.pageSize.getHeight();
+
+                while (heightLeft > 0) {
+                    position = heightLeft - pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                    heightLeft -= pdf.internal.pageSize.getHeight();
+                }
+
+                pdf.save(`Historico_Cautelas_${new Date().toISOString().split('T')[0]}.pdf`);
+                element.style.display = 'none';
+            }).catch(err => {
+                console.error('Erro ao gerar PDF:', err);
+                alert('Erro ao gerar PDF. Tente novamente.');
+                element.style.display = 'none';
+            });
+        }
+
+        document.getElementById('btnPdfHistorico')?.addEventListener('click', gerarPDFHistorico);
+
+        // ============================================
+        // AUTH
+        // ============================================
         async function loadUser() {
             try {
                 const response = await fetch('/api/usuario_atual', { credentials: 'same-origin' });

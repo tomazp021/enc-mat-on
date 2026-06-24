@@ -6,6 +6,9 @@
     <title>ENC-MAT · Histórico e LOG</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- jsPDF e html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -271,6 +274,11 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
         }
+        .top-bar-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
         .theme-toggle {
             background: var(--accent-light);
             border: none;
@@ -288,6 +296,23 @@
         .theme-toggle:hover {
             background: var(--accent);
             color: white;
+        }
+        .btn-pdf {
+            background: #c44a3a;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-pdf:hover {
+            background: #a63a2a;
         }
 
         .tabs {
@@ -455,6 +480,66 @@
             gap: 8px;
         }
 
+        /* PDF Content */
+        #pdfContent {
+            display: none;
+            background: white;
+            padding: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+            font-family: 'Inter', sans-serif;
+            color: #1a2c3e;
+        }
+        #pdfContent .pdf-header {
+            text-align: center;
+            border-bottom: 3px solid #2d6a4f;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        #pdfContent .pdf-header h1 {
+            font-size: 22px;
+            color: #2d6a4f;
+        }
+        #pdfContent .pdf-header p {
+            font-size: 11px;
+            color: #4a627a;
+        }
+        #pdfContent .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+            margin-bottom: 5px;
+        }
+        #pdfContent .pdf-table th {
+            background: #e6f4e6;
+            color: #2d6a4f;
+            padding: 5px 8px;
+            text-align: left;
+            border: 1px solid #c0d4c0;
+            font-weight: 700;
+            font-size: 8px;
+            text-transform: uppercase;
+        }
+        #pdfContent .pdf-table td {
+            padding: 4px 8px;
+            border: 1px solid #c0d4c0;
+        }
+        #pdfContent .pdf-table tr:nth-child(even) {
+            background: #f8faf8;
+        }
+        #pdfContent .pdf-footer {
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 9px;
+            color: #4a627a;
+            margin-top: 20px;
+        }
+        .pdf-badge-cautela { background: #d48a2a; color: white; padding: 1px 8px; border-radius: 12px; font-size: 7px; font-weight: 600; }
+        .pdf-badge-descautela { background: #2a7a4a; color: white; padding: 1px 8px; border-radius: 12px; font-size: 7px; font-weight: 600; }
+        .pdf-badge-login { background: #2a6a8a; color: white; padding: 1px 8px; border-radius: 12px; font-size: 7px; font-weight: 600; }
+        .pdf-badge-cadastro { background: #2d6a4f; color: white; padding: 1px 8px; border-radius: 12px; font-size: 7px; font-weight: 600; }
+
         @media (max-width: 768px) {
             .main-content {
                 padding: 1rem;
@@ -535,9 +620,12 @@
                     <h1><i class="fas fa-history"></i> Histórico e LOG</h1>
                     <p>Consulta de movimentações e auditoria do sistema</p>
                 </div>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i> <span>Modo Escuro</span>
-                </button>
+                <div class="top-bar-actions">
+                    <button class="btn-pdf" id="btnPdfHistorico"><i class="fas fa-file-pdf"></i> PDF Histórico</button>
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i> <span>Modo Escuro</span>
+                    </button>
+                </div>
             </div>
 
             <div class="tabs">
@@ -646,6 +734,20 @@
         </main>
     </div>
 
+    <!-- PDF Content (hidden) -->
+    <div id="pdfContent">
+        <div class="pdf-header">
+            <h1>📋 HISTÓRICO DE MOVIMENTAÇÕES</h1>
+            <p>Gerado em: <span id="pdfDataGeracao"></span></p>
+            <p id="pdfUsuarioInfo"></p>
+            <p id="pdfFiltroInfo"></p>
+        </div>
+        <div id="pdfBody"></div>
+        <div class="pdf-footer">
+            <p>ENC-MAT - Sistema de Gestão de Estoque</p>
+        </div>
+    </div>
+
     <script>
         let currentUser = null;
         let movimentacoes = [];
@@ -749,6 +851,9 @@
             
             renderizarMovimentacoes(filtrados);
             document.getElementById('totalRegistros').innerText = filtrados.length;
+            
+            // Guardar filtrados para PDF
+            window.movimentacoesFiltradas = filtrados;
         }
 
         function renderizarMovimentacoes(movs) {
@@ -876,6 +981,107 @@
             });
         }
 
+        // ============================================
+        // GERAR PDF DO HISTÓRICO
+        // ============================================
+        function gerarPDFHistorico() {
+            const movs = window.movimentacoesFiltradas || movimentacoes;
+            
+            if (movs.length === 0) {
+                alert('Nenhuma movimentação para gerar PDF!');
+                return;
+            }
+            
+            document.getElementById('pdfDataGeracao').textContent = new Date().toLocaleString('pt-BR');
+            document.getElementById('pdfUsuarioInfo').textContent = `Companhia: ${currentUser?.companhia || 'N/A'} | Usuário: ${currentUser?.nome || 'N/A'}`;
+            
+            // Informações dos filtros aplicados
+            const dataInicio = document.getElementById('dataInicio').value || 'Início';
+            const dataFim = document.getElementById('dataFim').value || 'Fim';
+            const tipo = document.getElementById('filtroTipo').value;
+            const pelotao = document.getElementById('filtroPelotao').value;
+            document.getElementById('pdfFiltroInfo').textContent = 
+                `Período: ${dataInicio} a ${dataFim} | Tipo: ${tipo === 'todos' ? 'Todos' : tipo} | Pelotão: ${pelotao === 'todos' ? 'Todos' : pelotao}`;
+            
+            let html = `
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Material</th>
+                            <th>Tipo</th>
+                            <th>Qtd</th>
+                            <th>Pelotão</th>
+                            <th>Usuário</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${movs.map(m => {
+                            const tipoClass = m.tipo === 'CAUTELA' ? 'pdf-badge-cautela' : 'pdf-badge-descautela';
+                            return `
+                                <tr>
+                                    <td>${m.data || '-'} ${m.hora || ''}</td>
+                                    <td>${m.material_nome || '-'}</td>
+                                    <td><span class="${tipoClass}">${m.tipo === 'CAUTELA' ? 'CAUTELA' : 'DESCAUTELA'}</span></td>
+                                    <td>${m.quantidade || 0}</td>
+                                    <td>${m.pelotao || '-'}</td>
+                                    <td>${m.usuario || '-'}</td>
+                                    <td>${m.observacao || '-'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('pdfBody').innerHTML = html;
+            
+            const element = document.getElementById('pdfContent');
+            element.style.display = 'block';
+            
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                width: element.scrollWidth,
+                height: element.scrollHeight
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                let heightLeft = pdfHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                heightLeft -= pdf.internal.pageSize.getHeight();
+
+                while (heightLeft > 0) {
+                    position = heightLeft - pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+                    heightLeft -= pdf.internal.pageSize.getHeight();
+                }
+
+                const dataHoje = new Date().toISOString().split('T')[0];
+                pdf.save(`Historico_Movimentacoes_${dataHoje}.pdf`);
+                element.style.display = 'none';
+            }).catch(err => {
+                console.error('Erro ao gerar PDF:', err);
+                alert('Erro ao gerar PDF. Tente novamente.');
+                element.style.display = 'none';
+            });
+        }
+
+        document.getElementById('btnPdfHistorico')?.addEventListener('click', gerarPDFHistorico);
+
+        // ============================================
+        // AUTH
+        // ============================================
         async function loadUser() {
             try {
                 const response = await fetch('/api/usuario_atual', { credentials: 'same-origin' });
